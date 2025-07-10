@@ -1,11 +1,11 @@
-﻿// Character
-const character = {
+﻿ // Character
+ export const character = {
     id: '',       // string
     name: '',     // string
   }
   
   // Script
-  const script = {
+  export const script = {
     id: '',                // string
     name: '',              // string
     answersCount: 0,       // number (или BigInt, если хочешь)
@@ -22,7 +22,7 @@ const character = {
   }
   
   // Scene
-  const scene = {
+  export const scene = {
     id: '',                 // string
     name: '',               // string
     scripts: [script],      // массив Script
@@ -30,7 +30,7 @@ const character = {
   }
   
   // Game
-  const game = {
+  export const game = {
     id: '',                 // string
     name: '',               // string
     scenes: [scene],        // массив Scene

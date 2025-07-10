@@ -12,8 +12,8 @@
 </style>
 
 <script>
-import Scenes from "@/components/Scenes.vue";
-import {state} from "@/store.js";
+import Scenes from "./Scenes.vue";
+import {state} from "../store.js";
 export default {
   name: 'Sidebar',
   props: ['scenes'],

@@ -9,14 +9,12 @@
 </style>
 
 <script>
-import SceneItem from "@/components/SceneItem.vue";
-import Sidebar from "@/components/Sidebar.vue";
+import SceneItem from "./SceneItem.vue";
 
 export default {
   name: 'Scenes',
   props: ['scenes'],
   components: {
-    Sidebar,
     SceneItem
   },
   methods: {
@@ -25,4 +23,5 @@ export default {
     }
   }
 }
+
 </script>

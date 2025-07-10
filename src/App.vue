@@ -1,13 +1,4 @@
-<template>
-    <div id="app">
-      <Sidebar :scenes="state.games[state.games.findIndex(game => game.id === state.selectedGameId)].scenes" @create="createScene" @addScript="addScript"/>
-      <Main/>
-      <ModalWindow v-if="createScriptModalOpened" :header="'Создать сценарий'" @closeModal="setCreateScriptModalState" @validate-request="saveScript"><CreateScriptModal ref="child"/></ModalWindow>
-      <ModalWindow v-if="createSceneModalOpened" :header="'Создать сцену'" @closeModal="setCreateSceneModalState" @validate-request="saveScene"><CreateSceneModal ref="sceneChild"/></ModalWindow>
-    </div>
-  </template>
-  
-  <script>
+<script>
   import Sidebar from "./components/Sidebar.vue";
   import Main from "./components/Main.vue";
   import ModalWindow from "./components/ModalWindow.vue";
@@ -131,6 +122,19 @@
   }
   </script>
   
+  <template>
+    <div id="app">
+      <Sidebar
+      :scenes="state.games[state.games.findIndex(game => game.id === state.selectedGameId)]?.scenes || []"
+      @create="createScene"
+      @addScript="addScript"
+      />
+      <Main/>
+      <ModalWindow v-if="createScriptModalOpened" :header="'Создать сценарий'" @closeModal="setCreateScriptModalState" @validate-request="saveScript"><CreateScriptModal ref="child"/></ModalWindow>
+      <ModalWindow v-if="createSceneModalOpened" :header="'Создать сцену'" @closeModal="setCreateSceneModalState" @validate-request="saveScene"><CreateSceneModal ref="sceneChild"/></ModalWindow>
+    </div>
+  </template>
+
   <style>
     body{
       overflow: hidden;

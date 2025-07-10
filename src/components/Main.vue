@@ -1,6 +1,6 @@
 ﻿<template>
   <main id="main">
-    Hi, it's the main part
+    <router-view />
   </main>
 </template>
 
@@ -12,4 +12,7 @@
 </style>
 
 <script>
+export default {
+  name: "Main"
+}
 </script>
