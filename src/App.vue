@@ -1,6 +1,10 @@
 <template>
     <div id="app">
-      <Sidebar :scenes="state.games[state.games.findIndex(game => game.id === state.selectedGameId)].scenes" @create="createScene" @addScript="addScript"/>
+      <Sidebar
+        :scenes="state.games[state.games.findIndex(game => game.id === state.selectedGameId)].scenes"
+        @addScene="addScene"
+        @addScript="addScript"
+      />
       <Main/>
       <ModalWindow v-if="createScriptModalOpened" :header="'Создать сценарий'" @closeModal="setCreateScriptModalState" @validate-request="saveScript"><CreateScriptModal ref="child"/></ModalWindow>
       <ModalWindow v-if="createSceneModalOpened" :header="'Создать сцену'" @closeModal="setCreateSceneModalState" @validate-request="saveScene"><CreateSceneModal ref="sceneChild"/></ModalWindow>
@@ -63,7 +67,8 @@
         this.createScriptSceneId = scene;
       },
       addScene() {
-        this.setCreateScriptModalState(true);
+        this.setCreateSceneModalState(true);
+        this.createSceneGameId = state.selectedGameId;
       },
       saveScript() {
         if(this.$refs.child.validate()) {
@@ -89,27 +94,16 @@
         }
       },
       saveScene() {
-        if (this.$refs.sceneChild.validate()) {
-          let child = this.$refs.child;
-          let game = state.games[state.games.findIndex(game => game.id === this.createScriptGameId)];
-          let scenes = game.scenes;
-          scenes[scenes.findIndex(gameId => gameId === this.createScriptSceneId)].scripts.push({
-            id: Date.now(),
-            name: child.name,
-            answersCount: child.answers_count,
-            branchesCount: child.branches_count,
-            character: {},
-            description: child.description,
-            getsItem: child.itemData.gets,
-            itemName: child.itemData.name,
-            itemCondition: child.itemData.condition,
-            getsInfo: child.infoData.gets,
-            infoName: child.infoData.name,
-            infoCondition: child.infoData.condition,
-            additional: child.additional
+        const game = state.games.find(game => game.id === this.createSceneGameId);
+        if (game) {
+          game.scenes.push({
+            id: Date.now().toString(),
+            name: `Scene ${game.scenes.length + 1}`,
+            scripts: [],
+            characters: [],
           });
-          this.setCreateScriptModalState(false);
         }
+        this.setCreateSceneModalState(false);
       }
     },
     data() {
@@ -120,6 +114,7 @@
         createScriptModalOpened: false,
         createSceneModalOpened: true,
         createScriptGameId: null,
+        createSceneGameId: null,
         scenes: []
       };
     },
