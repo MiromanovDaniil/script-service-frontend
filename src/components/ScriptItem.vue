@@ -5,7 +5,7 @@ export default {
     name: 'ScriptItem',
     props: {
       script: {
-        type: script,
+        type: Object,
         required: true
       }
     }

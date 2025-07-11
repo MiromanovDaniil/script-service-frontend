@@ -1,9 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Main from '../components/Main.vue'
+import MainView from '../components/MainView.vue'
 
-const routes = [
-    { path: '/', name: 'Main', component: Main }, 
-]
+const routes = [{ path: '/', name: 'main', component: MainView }]
 
 const router = createRouter({
   history: createWebHistory(),

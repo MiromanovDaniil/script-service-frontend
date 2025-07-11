@@ -1,6 +1,6 @@
 ﻿<template>
   <main id="main">
-    <router-view />
+    Hello world
   </main>
 </template>
 
@@ -13,6 +13,6 @@
 
 <script>
 export default {
-  name: "Main"
+  name: "MainView"
 }
 </script>

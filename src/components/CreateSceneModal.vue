@@ -1,5 +1,7 @@
-﻿<script setup lang="ts">
-
+﻿<script>
+export default {
+  name: 'CreateSceneModal'
+}
 </script>
 
 <template>

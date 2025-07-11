@@ -18,7 +18,7 @@ export default{
   <div class="modal-window-container">
     <div class="modal-window-background"></div>
     <form class="modal-dialog noselect" @submit.prevent="handleSubmit">
-      <button class="modal-dialog-close" @click="closeModal">X</button>
+      <button type="button" class="modal-dialog-close" @click.stop.prevent="closeModal">X</button>
       <div class="modal-dialog-header"><h1>{{header}}</h1></div>
       <div class="modal-dialog-body"><slot></slot></div>
       <div class="modal-dialog-footer"><button class="btn" type="submit">Сохранить</button></div>
