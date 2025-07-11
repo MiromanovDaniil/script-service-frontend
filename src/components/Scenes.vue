@@ -1,20 +1,26 @@
 ﻿<template>
   <div id="scenes">
-    <SceneItem v-for="scene of scenes" :scene="scene" @addScript="addScript" />
+    <Scrollview :w="'100%'" :h="'100%'">
+      <SceneItem v-for="scene of scenes" :scene="scene" @addScript="addScript" />
+    </Scrollview>
   </div>
 </template>
 
 <style scoped>
-
+  #scenes {
+    height: calc(100% - 36px);
+  }
 </style>
 
 <script>
 import SceneItem from "./SceneItem.vue";
+import Scrollview from '@/components/Scrollview.vue'
 
 export default {
   name: 'Scenes',
   props: ['scenes'],
   components: {
+    Scrollview,
     SceneItem
   },
   methods: {
