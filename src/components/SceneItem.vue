@@ -37,7 +37,7 @@ export default {
 </template>
 
 <style scoped>
-.panel[data-v-719ce23f] {
+.panel[data-v-2f5682b3] {
   padding: 0;
 }
 .accordion {
@@ -45,7 +45,7 @@ export default {
   color: #444;
   cursor: pointer;
   padding: 18px;
-  width: 100%;
+  width: calc(100% - 36px);
   text-align: left;
   border: none;
   outline: none;

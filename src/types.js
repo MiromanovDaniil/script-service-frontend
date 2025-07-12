@@ -19,6 +19,7 @@
     infoName: '',          // string
     infoCondition: '',     // string
     additional: '',        // string
+    result: {},            // объект с результатом
   }
   
   // Scene
