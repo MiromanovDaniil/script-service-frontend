@@ -1,55 +1,62 @@
-﻿<script setup>
-import Scrollview from '@/components/Scrollview.vue'
-import GameItem from '@/components/Games/GameItem.vue'
-import { state } from '@/store.js'
-import { useRoute } from 'vue-router'
+﻿<template>
+  <div class="games-list">
+    <!-- Карточка для создания новой игры -->
+    <div class="game-item add-game-item" @click="openCreateModal">
+      <div class="game-item-plus">+</div>
+    </div>
 
-const route = useRoute()
-if (route.name === 'main') {
-  state.selectedGameId = null
-}
-</script>
-
-<script>
-import GameItem from '@/components/Games/GameItem.vue'
-import Scrollview from '@/components/Scrollview.vue'
-
-export default {
-  components: { GameItem, Scrollview },
-  methods: {
-    open(game) {},
-    chars(game) {},
-  },
-}
-</script>
-
-<template>
-  <div class="games-page-container">
-    <header class="games-page-header">
-      <div class="games-page-account-btn">account</div>
-      <div class="games-page-settings-btn">setting</div>
-    </header>
-    <Scrollview class="games-page-games-container" :w="'100%'" :h="'100%'" style="background: red">
-      <GameItem v-for="game of games" @open="open(game)" @chars="chars(game)" :game="game" />
-    </Scrollview>
+    <!-- Существующие игры -->
+    <GameItem
+      v-for="game in state.games"
+      :key="game.id"
+      :game="game"
+      @open="openGame"
+      @chars="openCharacters"
+    />
   </div>
+
+  <CreateGameModal
+    v-if="showCreateModal"
+    @close="showCreateModal = false"
+    @create="addGame"
+  />
 </template>
 
-<style scoped>
-.games-page-header {
-  height: fit-content;
-  display: flex;
-  justify-content: space-between;
+<script>
+import GameItem from '@/components/games/GameItem.vue'
+import CreateGameModal from '@/components/games/CreateGameModal.vue'
+import { state } from '@/store' // ВАЖНО!
+
+export default {
+  components: { GameItem, CreateGameModal },
+  data() {
+    return {
+      showCreateModal: false
+    }
+  },
+  methods: {
+    openCreateModal() {
+      this.showCreateModal = true
+    },
+    addGame(newGame) {
+      state.games.push({
+        id: Date.now().toString(),
+        name: newGame.name,
+        scenes: [],
+        characters: [],
+      })
+    },
+    openGame(game) {
+      this.$router.push('/' + game.id)
+    },
+    openCharacters(game) {
+      alert('Открыть персонажей игры: ' + game.name)
+    }
+  },
+  computed: {
+    state() {
+      return state
+    }
+  }
 }
-.games-page-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.games-page-games-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 350px);
-  gap: 10px;
-}
-</style>
+</script>
