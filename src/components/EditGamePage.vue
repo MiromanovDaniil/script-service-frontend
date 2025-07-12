@@ -9,6 +9,7 @@ import '@/types.js'
 import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
+import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
 
 export default {
   name: 'EditGamePage',
@@ -25,6 +26,7 @@ export default {
     ModalWindow,
     Sidebar,
     Main,
+    CreateCharacterModal,
   },
   methods: {
     checkGameExists() {
@@ -78,6 +80,7 @@ export default {
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
         scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.push({
+          id: Date.now(),
           name: child.name,
           answers_from_m: child.answers_from_m,
           answers_to_m: child.answers_to_m,
@@ -91,6 +94,7 @@ export default {
           itemData: child.itemData,
           infoData: child.itemData,
           additional: child.additional,
+          result: {},
         })
         this.setCreateScriptModalState(false)
       }
@@ -122,7 +126,7 @@ export default {
       scenes: [],
       game: null,
       answerLoadingModalOpened: false,
-      createCharacterModalOpened: false,
+      createCharacterModalOpened: true,
     }
   },
   mounted() {
@@ -186,6 +190,14 @@ export default {
       :show-buttons="false"
     >
       <AnswerLoadingModal/>
+    </ModalWindow>
+    <ModalWindow
+      v-if="createCharacterModalOpened"
+      :header="'Персонаж'"
+      @closeModal="setCreateCharacterModalState"
+      :show-buttons="true"
+    >
+      <CreateCharacterModal/>
     </ModalWindow>
   </div>
 </template>

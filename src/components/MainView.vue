@@ -137,8 +137,12 @@ const offsetX = ref(0)
 const offsetY = ref(0)
 const canvasRef = ref<HTMLDivElement | null>(null)
 
-function findNodeById(id: string) {
-  return scenario.value.data.find((n) => n.id === id)
+function findNodeById(id: string): GraphNode | undefined {
+  const node = scenario.value.data.find((n) => n.id === id)
+  if (node && !node.meta) {
+    node.meta = {}
+  }
+  return node
 }
 
 function layoutTree() {
@@ -147,7 +151,10 @@ function layoutTree() {
   const next = { val: 0 }
 
   function walk(node: GraphNode, depth: number) {
-    if (!node.meta) node.meta = {}
+    // Инициализируем meta если его нет
+    if (!node.meta) {
+      node.meta = {}
+    }
     const children = node.to.map(findNodeById).filter((c): c is GraphNode => !!c)
 
     if (children.length === 0) {
@@ -164,7 +171,10 @@ function layoutTree() {
     }
   }
 
-  walk(currentRoot.value, 0)
+  // Добавляем проверку на существование currentRoot.value
+  if (currentRoot.value) {
+    walk(currentRoot.value, 0)
+  }
 }
 
 function animateCenterTo(x: number, y: number) {
@@ -175,12 +185,16 @@ function animateCenterTo(x: number, y: number) {
 }
 
 function centerCanvasToRoot() {
-  if (!currentRoot.value.meta) return
+  if (!currentRoot.value || !currentRoot.value.meta) {
+    return
+  }
   animateCenterTo(currentRoot.value.meta.x || 0, currentRoot.value.meta.y || 0)
 }
 
 function centerCanvasToNode(node: GraphNode) {
-  if (!node.meta) return
+  if (!node || !node.meta) {
+    return
+  }
   animateCenterTo(node.meta.x || 0, node.meta.y || 0)
 }
 
@@ -235,9 +249,76 @@ function endPan() {
 }
 
 onMounted(() => {
-  layoutTree()
-  nextTick(() => centerCanvasToRoot())
-  window.addEventListener('resize', centerCanvasToRoot)
+  if (state.selectedSceneId === null) {
+    emit('createScene')
+  } else if (state.selectedScriptId === null) {
+    emit('createScene')
+  } else {
+    const game = state.games.find(g => g.id === route.params.id)
+    if (game) {
+      const scene = game.scenes.find(s => s.id === state.selectedSceneId)
+      if (scene) {
+        const script = scene.scripts.find(s => s.id === state.selectedScriptId)
+        if (script) {
+          // Проверяем, что result существует и является массивом
+          let loadedData: GraphNode[] = []
+
+          if (Array.isArray(script.result)) {
+            // Если result - массив, используем его
+            loadedData = script.result.map(node => ({
+              ...node,
+              meta: node.meta || {} // Добавляем meta если его нет
+            }))
+          } else if (script.result && typeof script.result === 'object') {
+            // Если result - объект (возможно старая версия), преобразуем в массив
+            loadedData = Object.values(script.result).map((node: any) => ({
+              ...node,
+              meta: node.meta || {}
+            }))
+          } else {
+            // Если данных нет, создаем начальный узел
+            loadedData = [{
+              id: 'root',
+              line: 'Начало',
+              info: '',
+              type: 'start',
+              mood: 'neutral',
+              goal_achieve: 0,
+              to: [],
+              meta: {}
+            }]
+          }
+
+          scenario.value = {
+            name: script.name || 'Новый диалог',
+            description: script.description || '',
+            data: loadedData
+          }
+
+          // Находим корневой узел (с type === 'start' или первый в массиве)
+          currentRoot.value = scenario.value.data.find(n => n.type === 'start') || scenario.value.data[0]
+
+          if (!currentRoot.value) {
+            // Если вообще нет узлов, создаем корневой
+            currentRoot.value = {
+              id: 'root',
+              line: 'Начало',
+              info: '',
+              type: 'start',
+              mood: 'neutral',
+              goal_achieve: 0,
+              to: [],
+              meta: {}
+            }
+            scenario.value.data.push(currentRoot.value)
+          }
+
+          layoutTree()
+          nextTick(() => centerCanvasToRoot())
+        }
+      }
+    }
+  }
 })
 
 onBeforeUnmount(() => {
@@ -408,10 +489,8 @@ onMounted(() => {
       const scene = game.scenes.find(s => s.id === state.selectedSceneId)
       if (scene) {
         const script = scene.scripts.find(s => s.id === state.selectedScriptId)
-        console.log(script)
         if (script && script.result) {
           if (Object.keys(script.result).length === 0) {
-
             return
           }
           scenario.value = {

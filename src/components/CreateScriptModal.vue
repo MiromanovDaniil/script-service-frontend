@@ -88,10 +88,10 @@ export default {
       }
     },
     npcEdited() {
-      this.npc = this.$refs.npc
+      this.npc = this.$refs.npc.character;
     },
     mainCharacterEdited() {
-      this.main_character = this.$refs.main_char
+      this.main_character = this.$refs.main_char.character;
     }
   },
 }

@@ -1,5 +1,5 @@
 <script>
-
+  //import "@/../api/api.js"
 </script>
 
 <template>
