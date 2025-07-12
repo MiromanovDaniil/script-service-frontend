@@ -1,10 +1,10 @@
 ﻿<template>
   <div class="scenario-view">
-    <input v-model="scenario.name" class="scenario-name" placeholder="Название сценария" />
+    <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
     <textarea
       v-model="scenario.description"
       class="scenario-description"
-      placeholder="Краткое описание сценария"
+      placeholder="Краткое описание диалога"
     ></textarea>
 
     <div class="scenario-actions">
@@ -18,17 +18,35 @@
         class="crumb"
         @click="openBreadcrumb(i)"
       >
-        {{ i === 0 ? 'Root' : node.text.slice(0, 20) }}
+        {{ i === 0 ? 'В начало' : node.line.slice(0, 20) }}
         <span v-if="i < breadcrumbs.length - 1"> / </span>
       </span>
     </div>
 
     <div class="canvas" ref="canvasRef" @mousedown="startPan">
-      <div
-        class="canvas-content"
-        :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }"
-      >
-        <svg class="lines">
+      <div class="canvas-content" :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }">
+        <svg
+          class="lines"
+          xmlns="http://www.w3.org/2000/svg"
+          :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
+          :width="svgWidth"
+          :height="svgHeight"
+          style="overflow: visible;"
+        >
+          <defs>
+            <marker
+              id="arrow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#888" />
+            </marker>
+          </defs>
+
           <line
             v-for="(l, i) in lines"
             :key="i"
@@ -37,6 +55,8 @@
             :x2="l.x2"
             :y2="l.y2"
             stroke="#888"
+            stroke-width="2"
+            marker-end="url(#arrow)"
           />
         </svg>
 
@@ -45,13 +65,15 @@
             v-for="node in flatNodes"
             :key="node.id"
             class="node"
-            :style="{ left: node.meta.x + 'px', top: node.meta.y + 'px' }"
+            :class="{ selected: connectingFrom?.id === node.id }"
+            :style="{ left: node.meta?.x + 'px', top: node.meta?.y + 'px' }"
           >
             <div class="node-content">
-              <div class="text">{{ node.text }}</div>
+              <div class="text">{{ node.line }}</div>
               <div class="actions">
                 <button @click="() => addChild(node)">+</button>
                 <button @click="() => deleteNode(node)">🗑</button>
+                <button @click="() => connectNode(node)">🔗</button>
               </div>
             </div>
           </div>
@@ -64,55 +86,71 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-interface DialogNode {
+interface GraphNode {
   id: string
-  text: string
-  children: DialogNode[]
+  line: string
+  info: string
+  type: string
+  mood: string
+  goal_achieve: number
+  to: string[]
   meta?: { x?: number; y?: number }
 }
 
 interface Scenario {
   name: string
   description: string
-  root: DialogNode
+  data: GraphNode[]
 }
 
 const scenario = ref<Scenario>({
-  name: 'Новый сценарий',
+  name: 'Новый диалог',
   description: '',
-  root: {
-    id: 'root',
-    text: 'Начало',
-    children: [],
-    meta: {},
-  },
+  data: [
+    {
+      id: 'root',
+      line: 'Начало',
+      info: '',
+      type: 'start',
+      mood: 'neutral',
+      goal_achieve: 0,
+      to: [],
+      meta: {},
+    },
+  ],
 })
 
-const currentRoot = ref<DialogNode>(scenario.value.root)
-const stack = ref<DialogNode[]>([])
+const currentRoot = ref<GraphNode>(scenario.value.data[0])
+const stack = ref<GraphNode[]>([])
 const breadcrumbs = computed(() => [...stack.value, currentRoot.value])
+
+const NODE_WIDTH = 120
+const NODE_HEIGHT = 60
 
 const offsetX = ref(0)
 const offsetY = ref(0)
 const canvasRef = ref<HTMLDivElement | null>(null)
 
-const NODE_WIDTH = 120
-const NODE_HEIGHT = 60
+function findNodeById(id: string) {
+  return scenario.value.data.find((n) => n.id === id)
+}
 
 function layoutTree() {
   const hGap = 180
   const vGap = 120
   const next = { val: 0 }
 
-  function walk(node: DialogNode, depth: number) {
+  function walk(node: GraphNode, depth: number) {
     if (!node.meta) node.meta = {}
-    if (node.children.length === 0) {
+    const children = node.to.map(findNodeById).filter((c): c is GraphNode => !!c)
+
+    if (children.length === 0) {
       node.meta.x = next.val * hGap
       node.meta.y = depth * vGap
       next.val++
     } else {
       const start = next.val
-      node.children.forEach((c) => walk(c, depth + 1))
+      children.forEach((c) => walk(c, depth + 1))
       const end = next.val - 1
       const mid = (start + end) / 2
       node.meta.x = mid * hGap
@@ -120,26 +158,23 @@ function layoutTree() {
     }
   }
 
-  if (currentRoot.value) walk(currentRoot.value, 0)
+  walk(currentRoot.value, 0)
 }
 
 function animateCenterTo(x: number, y: number) {
   const canvas = canvasRef.value
   if (!canvas) return
-  const centerX = canvas.clientWidth / 2 - x
-  const centerY = 40
-
-  offsetX.value = centerX
-  offsetY.value = centerY
+  offsetX.value = canvas.clientWidth / 2 - x
+  offsetY.value = 40
 }
 
 function centerCanvasToRoot() {
-  if (!currentRoot.value?.meta) return
+  if (!currentRoot.value.meta) return
   animateCenterTo(currentRoot.value.meta.x || 0, currentRoot.value.meta.y || 0)
 }
 
-function centerCanvasToNode(node: DialogNode) {
-  if (!node?.meta) return
+function centerCanvasToNode(node: GraphNode) {
+  if (!node.meta) return
   animateCenterTo(node.meta.x || 0, node.meta.y || 0)
 }
 
@@ -160,6 +195,33 @@ function onPan(e: MouseEvent) {
   offsetX.value = e.clientX - panStartX
   offsetY.value = e.clientY - panStartY
 }
+function getRectEdgeIntersection(
+  cx: number,
+  cy: number,
+  w: number,
+  h: number,
+  px: number,
+  py: number
+): { x: number; y: number } {
+
+  const dx = px - cx
+  const dy = py - cy
+
+  if (dx === 0 && dy === 0) {
+    return { x: cx, y: cy }
+  }
+
+  const scaleX = (w / 2) / Math.abs(dx)
+  const scaleY = (h / 2) / Math.abs(dy)
+
+  const scale = Math.min(scaleX, scaleY)
+
+  return {
+    x: cx + dx * scale,
+    y: cy + dy * scale,
+  }
+}
+
 function endPan() {
   panning = false
   window.removeEventListener('mousemove', onPan)
@@ -168,9 +230,7 @@ function endPan() {
 
 onMounted(() => {
   layoutTree()
-  nextTick(() => {
-    centerCanvasToRoot()
-  })
+  nextTick(() => centerCanvasToRoot())
   window.addEventListener('resize', centerCanvasToRoot)
 })
 
@@ -179,13 +239,21 @@ onBeforeUnmount(() => {
 })
 
 const flatNodes = computed(() => {
-  const arr: DialogNode[] = []
-  function walk(node: DialogNode) {
-    arr.push(node)
-    node.children.forEach(walk)
+  const visited = new Set<string>()
+  const result: GraphNode[] = []
+
+  function walk(node: GraphNode) {
+    if (visited.has(node.id)) return
+    visited.add(node.id)
+    result.push(node)
+    node.to.forEach((id) => {
+      const child = findNodeById(id)
+      if (child) walk(child)
+    })
   }
-  if (currentRoot.value) walk(currentRoot.value)
-  return arr
+
+  walk(currentRoot.value)
+  return result
 })
 
 interface Line {
@@ -197,57 +265,92 @@ interface Line {
 
 const lines = computed(() => {
   const arr: Line[] = []
-  function walk(node: DialogNode) {
-    node.children.forEach((c) => {
-      arr.push({
-        x1: (node.meta?.x || 0) + NODE_WIDTH / 2,
-        y1: (node.meta?.y || 0) + NODE_HEIGHT / 2,
-        x2: (c.meta?.x || 0) + NODE_WIDTH / 2,
-        y2: (c.meta?.y || 0) + NODE_HEIGHT / 2,
-      })
-      walk(c)
+  const visited = new Set<string>()
+
+  function walk(node: GraphNode) {
+    if (visited.has(node.id)) return
+    visited.add(node.id)
+
+    node.to.forEach((id) => {
+      const child = findNodeById(id)
+      if (child && node.meta && child.meta) {
+        const startCenterX = node.meta.x! + NODE_WIDTH / 2
+        const startCenterY = node.meta.y! + NODE_HEIGHT / 2
+        const endCenterX = child.meta.x! + NODE_WIDTH / 2
+        const endCenterY = child.meta.y! + NODE_HEIGHT / 2
+
+        const start = getRectEdgeIntersection(
+          startCenterX,
+          startCenterY,
+          NODE_WIDTH,
+          NODE_HEIGHT,
+          endCenterX,
+          endCenterY
+        )
+
+        const end = getRectEdgeIntersection(
+          endCenterX,
+          endCenterY,
+          NODE_WIDTH,
+          NODE_HEIGHT,
+          startCenterX,
+          startCenterY
+        )
+
+        arr.push({
+          x1: start.x,
+          y1: start.y,
+          x2: end.x,
+          y2: end.y,
+        })
+
+        walk(child)
+      }
     })
   }
-  if (currentRoot.value) walk(currentRoot.value)
+
+  walk(currentRoot.value)
   return arr
 })
 
-function addChild(node: DialogNode) {
-  const newNode: DialogNode = {
+
+
+
+const svgWidth = computed(() => {
+  const maxX = Math.max(...flatNodes.value.map(n => (n.meta?.x ?? 0) + NODE_WIDTH))
+  return maxX + 100
+})
+
+const svgHeight = computed(() => {
+  const maxY = Math.max(...flatNodes.value.map(n => (n.meta?.y ?? 0) + NODE_HEIGHT))
+  return maxY + 100
+})
+
+function addChild(node: GraphNode) {
+  const newNode: GraphNode = {
     id: Date.now().toString(),
-    text: 'Новый узел',
-    children: [],
+    line: 'Новый узел',
+    info: '',
+    type: 'normal',
+    mood: 'neutral',
+    goal_achieve: 0,
+    to: [],
     meta: {},
   }
 
-  node.children.push(newNode)
+  scenario.value.data.push(newNode)
+  node.to.push(newNode.id)
   layoutTree()
-
-  nextTick(() => {
-    if (!newNode.meta?.x || !newNode.meta?.y) return
-    const canvas = canvasRef.value
-    if (!canvas) return
-    offsetX.value = canvas.clientWidth / 2 - newNode.meta.x!
-    offsetY.value = canvas.clientHeight / 2 - newNode.meta.y!
-  })
+  nextTick(() => centerCanvasToNode(newNode))
 }
 
+function deleteNode(target: GraphNode) {
+  scenario.value.data = scenario.value.data.filter((n) => n.id !== target.id)
+  scenario.value.data.forEach((n) => {
+    n.to = n.to.filter((childId) => childId !== target.id)
+  })
 
-
-function deleteNode(node: DialogNode) {
-  function remove(target: DialogNode, nodes: DialogNode[]): boolean {
-    const idx = nodes.indexOf(target)
-    if (idx !== -1) {
-      nodes.splice(idx, 1)
-      return true
-    }
-    for (const n of nodes) {
-      if (remove(target, n.children)) return true
-    }
-    return false
-  }
-  remove(node, [scenario.value.root])
-  if (currentRoot.value === node) back()
+  if (currentRoot.value.id === target.id) back()
   layoutTree()
   centerCanvasToRoot()
 }
@@ -264,6 +367,27 @@ function openBreadcrumb(index: number) {
   stack.value = breadcrumbs.value.slice(0, index)
   layoutTree()
   centerCanvasToRoot()
+}
+
+const connectingFrom = ref<GraphNode | null>(null)
+
+function connectNode(node: GraphNode) {
+  if (!connectingFrom.value) {
+    connectingFrom.value = node
+  } else {
+    const from = connectingFrom.value
+    const to = node
+
+    const alreadyConnected = from.to.includes(to.id)
+    const sameNode = from.id === to.id
+
+    if (!alreadyConnected && !sameNode) {
+      from.to.push(to.id)
+    }
+
+    connectingFrom.value = null
+    layoutTree()
+  }
 }
 </script>
 
@@ -331,9 +455,8 @@ function openBreadcrumb(index: number) {
   position: absolute;
   top: 0;
   left: 0;
-  width: 10000px;
-  height: 10000px;
   pointer-events: none;
+  overflow: visible;
 }
 
 .canvas-inner {
@@ -351,6 +474,10 @@ function openBreadcrumb(index: number) {
   padding: 6px;
   color: #ddd;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.node.selected {
+  outline: 2px solid #5af;
 }
 
 .node-content .text {

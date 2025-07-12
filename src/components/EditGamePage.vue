@@ -1,131 +1,200 @@
 ﻿<script lang="ts">
-import Sidebar from "./Sidebar.vue";
-import Main from "./MainView.vue";
-import ModalWindow from "./ModalWindow.vue";
-import CreateScriptModal from "./CreateScriptModal.vue";
-import CreateSceneModal from "./CreateSceneModal.vue";
-import {state, defaultState} from '@/store.js';
-import '@/types.js';
+import Sidebar from './Sidebar.vue'
+import Main from './MainView.vue'
+import ModalWindow from './ModalWindow.vue'
+import CreateScriptModal from './CreateScriptModal.vue'
+import CreateSceneModal from './CreateSceneModal.vue'
+import { state, defaultState } from '@/store.js'
+import '@/types.js'
+import ScriptItem from '@/components/ScriptItem.vue'
+import { watch } from 'vue'
+import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
+
 export default {
   name: 'EditGamePage',
   computed: {
     state() {
       return state
-    }
+    },
   },
   components: {
+    AnswerLoadingModal,
+    ScriptItem,
     CreateScriptModal,
     CreateSceneModal,
     ModalWindow,
     Sidebar,
-    Main
+    Main,
   },
   methods: {
+    checkGameExists() {
+      if (!this.game) {
+        this.$router.push('/')
+      }
+    },
     createGame(game) {
       state.games.push({
         id: game.id.toString(),
         name: game.title,
         scenes: [],
         characters: [],
-      });
-      this.games.push(game);
+      })
+      this.games.push(game)
     },
     createScene(scene) {
-      state.games[state.games.findIndex(game => game.id === state.selectedGameId)].scenes.push({
+      state.games[state.games.findIndex((game) => game.id === state.selectedGameId)].scenes.push({
         id: scene.id,
         name: scene.name,
         scripts: scene.scripts,
-        characters: scene.characters
-      });
+        characters: scene.characters,
+      })
     },
     setCreateScriptModalState(state) {
-      this.createScriptModalOpened = state;
+      this.createScriptModalOpened = state
       if (!state) {
-        this.createScriptGameId = null;
+        this.createScriptGameId = null
       }
     },
     setCreateSceneModalState(state) {
-      this.createSceneModalOpened = state;
+      this.createSceneModalOpened = state
+    },
+    setAnswerLoadingModalState(state) {
+      this.answerLoadingModalOpened = state
+    },
+    setCreateCharacterModalState(state) {
+      this.createCharacterModalOpened = state
     },
     addScript(scene) {
-      this.setCreateScriptModalState(true);
-      this.createScriptGameId = state.selectedGameId;
-      this.createScriptSceneId = scene;
+      this.setCreateScriptModalState(true)
+      this.createScriptGameId = state.selectedGameId
+      this.createScriptSceneId = scene
     },
     addScene() {
-      this.setCreateSceneModalState(true);
+      this.setCreateSceneModalState(true)
     },
     saveScript() {
-      if(this.$refs.child.validate()) {
-        let child = this.$refs.child;
-        let game = state.games[state.games.findIndex(game => game.id === this.createScriptGameId)];
-        let scenes = game.scenes;
-        scenes[scenes.findIndex(gameId => gameId === this.createScriptSceneId)].scripts.push({
-          id: Date.now(),
+      if (this.$refs.child.validate()) {
+        let child = this.$refs.child
+        let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
+        let scenes = game.scenes
+        scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.push({
           name: child.name,
-          answersCount: child.answers_count,
-          branchesCount: child.branches_count,
-          character: {},
+          answers_from_m: child.answers_from_m,
+          answers_to_m: child.answers_to_m,
+          answers_from_n: child.answers_from_n,
+          answers_to_n: child.answers_to_n,
+          main_character: child.main_character,
+          to_npc_relations: child.to_npc_relations,
+          npc: child.npc,
+          to_main_character_relations: child.to_main_character_relations,
           description: child.description,
-          getsItem: child.itemData.gets,
-          itemName: child.itemData.name,
-          itemCondition: child.itemData.condition,
-          getsInfo: child.infoData.gets,
-          infoName: child.infoData.name,
-          infoCondition: child.infoData.condition,
-          additional: child.additional
-        });
-        this.setCreateScriptModalState(false);
+          itemData: child.itemData,
+          infoData: child.itemData,
+          additional: child.additional,
+        })
+        this.setCreateScriptModalState(false)
       }
     },
     saveScene() {
       if (this.$refs.sceneChild.validate()) {
-        let child = this.$refs.sceneChild;
-        let game = state.games[state.games.findIndex(game => game.id === state.selectedGameId)];
+        let child = this.$refs.sceneChild
+        let game = state.games[state.games.findIndex((game) => game.id === state.selectedGameId)]
         game.scenes.push({
           id: Date.now(),
           name: child.name,
           character: child.characters,
           description: child.description,
-          scripts: []
-        });
-        this.setCreateSceneModalState(false);
+          scripts: [],
+        })
+        this.setCreateSceneModalState(false)
       }
-    }
+    },
   },
   data() {
-    return {'games': [
-        {id: "1752067787408", title: 'Game 1', scripts: [], characters: []},
-        {id: 2, title: 'Game 2', scripts: [], characters: []},
+    return {
+      games: [
+        { id: '1752067787408', title: 'Game 1', scripts: [], characters: [] },
+        { id: 2, title: 'Game 2', scripts: [], characters: [] },
       ],
       createScriptModalOpened: false,
       createSceneModalOpened: false,
       createScriptGameId: null,
-      scenes: []
-    };
+      scenes: [],
+      game: null,
+      answerLoadingModalOpened: false,
+      createCharacterModalOpened: false,
+    }
   },
   mounted() {
     if (!localStorage.getItem('scenario-data')) {
-      localStorage.setItem('scenario-data', JSON.stringify(defaultState));
+      localStorage.setItem('scenario-data', JSON.stringify(defaultState))
     }
-  }
+
+    // Find the game
+    this.game = state.games.find((g) => g.id === this.$route.params.id)
+    state.selectedGameId = this.$route.params.id
+
+    // Check if game exists
+    this.checkGameExists()
+
+    // Watch for route changes
+    this.$watch(
+      () => this.$route.params.id,
+      (newId) => {
+        this.game = state.games.find((g) => g.id === newId)
+        state.selectedGameId = newId
+        this.checkGameExists()
+      },
+    )
+  },
+  // Alternative using beforeMount
+  beforeMount() {
+    this.game = state.games.find((g) => g.id === this.$route.params.id)
+    if (!this.game) {
+      this.$router.push('/')
+    }
+  },
 }
 </script>
 
 <template>
-  <div class="edit-game-page-container">
-    <Sidebar :scenes="state.games[state.games.findIndex(game => game.id === state.selectedGameId)].scenes" @addScene="addScene" @addScript="addScript"/>
-    <Main/>
-    <ModalWindow v-if="createScriptModalOpened" :header="'Создать сценарий'" @closeModal="setCreateScriptModalState" @validate-request="saveScript"><CreateScriptModal ref="child"/></ModalWindow>
-    <ModalWindow v-if="createSceneModalOpened" :header="'Создать сцену'" @closeModal="setCreateSceneModalState" @validate-request="saveScene"><CreateSceneModal ref="sceneChild"/></ModalWindow>
+  <div class="edit-game-page-container" v-if="game">
+    <Sidebar v-if="game" :scenes="game.scenes" @addScene="addScene" @addScript="addScript" />
+    <Main />
+    <ModalWindow
+      v-if="createScriptModalOpened"
+      :header="'Создать диалог'"
+      :show-buttons="true"
+      @closeModal="setCreateScriptModalState"
+      @validate-request="saveScript"
+    >
+      <CreateScriptModal ref="child" />
+    </ModalWindow>
+    <ModalWindow
+      v-if="createSceneModalOpened"
+      :header="'Создать сцену'"
+      :show-buttons="true"
+      @closeModal="setCreateSceneModalState"
+      @validate-request="saveScene"
+    >
+      <CreateSceneModal ref="sceneChild" />
+    </ModalWindow>
+    <ModalWindow
+      v-if="answerLoadingModalOpened"
+      :header="'Идет загрузка...'"
+      @closeModal="setAnswerLoadingModalState"
+      :show-buttons="false"
+    >
+      <AnswerLoadingModal/>
+    </ModalWindow>
   </div>
 </template>
 
 <style scoped>
-  .edit-game-page-container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    height: 97.5vh;
-  }
+.edit-game-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  height: 97.5vh;
+}
 </style>

@@ -2,10 +2,11 @@
 import { ref } from 'vue';
 export default{
   name: "ModalWindow",
-  props: ['header', 'inner'],
+  props: {header:'', showButtons: true},
   methods: {
     closeModal(){
-      this.$emit('closeModal', false)
+      if (this.showButtons)
+        this.$emit('closeModal', false)
     },
     handleSubmit(data) {
       this.$emit('validate-request', data);
@@ -18,10 +19,10 @@ export default{
   <div class="modal-window-container">
     <div class="modal-window-background" @click="closeModal"></div>
     <form class="modal-dialog noselect" @submit.prevent="handleSubmit">
-      <button class="modal-dialog-close" @click="closeModal">X</button>
+      <button class="modal-dialog-close" v-if="showButtons" @click="closeModal">X</button>
       <div class="modal-dialog-header"><h1>{{header}}</h1></div>
       <div class="modal-dialog-body"><slot></slot></div>
-      <div class="modal-dialog-footer"><button class="btn" type="submit">Сохранить</button></div>
+      <div class="modal-dialog-footer"><button class="btn" v-if="showButtons" type="submit">Сохранить</button></div>
     </form>
   </div>
 </template>

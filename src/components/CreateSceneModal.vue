@@ -116,6 +116,7 @@ export default {
     margin-top: .75em;
   }
   .create-scene-modal-textarea-input {
+    min-height: 100px;
     height: calc(100% - 80px);
     resize: none;
     width: calc(100% - 6px);
