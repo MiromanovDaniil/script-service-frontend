@@ -85,6 +85,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { state } from '@/store'
+import { mount } from '@vue/test-utils'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const emit = defineEmits(['createScene'])
 
 interface GraphNode {
   id: string
@@ -389,6 +395,38 @@ function connectNode(node: GraphNode) {
     layoutTree()
   }
 }
+
+onMounted(() => {
+  if (state.selectedSceneId === null) {
+    emit('createScene')
+  } else if (state.selectedScriptId === null) {
+    emit('createScene')
+  } else {
+    // Load existing scenario data if available
+    const game = state.games.find(g => g.id === route.params.id)
+    if (game) {
+      const scene = game.scenes.find(s => s.id === state.selectedSceneId)
+      if (scene) {
+        const script = scene.scripts.find(s => s.id === state.selectedScriptId)
+        console.log(script)
+        if (script && script.result) {
+          if (Object.keys(script.result).length === 0) {
+
+            return
+          }
+          scenario.value = {
+            name: script.name || 'Новый диалог',
+            description: script.description || '',
+            data: script.result
+          }
+          currentRoot.value = scenario.value.data[0] || scenario.value.data[0]
+          layoutTree()
+          nextTick(() => centerCanvasToRoot())
+        }
+      }
+    }
+  }
+})
 </script>
 
 <style scoped>

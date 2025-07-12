@@ -23,6 +23,9 @@ export default {
     },
     createCharacter() {
       this.$emit('create_character')
+    },
+    edited(){
+      this.$emit('edited')
     }
   }
 }
@@ -30,13 +33,13 @@ export default {
 
 <template>
   <div class="character-item-container">
-    <select type="text" @change="createCharacter" :class="{error: this.error}" v-model="this.character" class="input">
+    <select type="text" @change="edited" :class="{error: this.error}" v-model="this.character" class="input">
       <option value="">Выбрать персонжа</option>
       <option v-for="char of state.games.find(g => g.id === this.$route.params.id).characters" :value="char.id">{{char.name}}</option>
     </select>
     <span style="cursor: pointer;" @click="createCharacter">+</span>
     <span class="error-label" v-if="this.error">Это поле обязательно для заполнения</span>
-    <img src="/assets/edit.png" class="character-item-edit" @click="edit(this.character)" />
+    <!--<img src="/assets/edit.png" class="character-item-edit" @click="edit(this.character)" />-->
     <!--<UnpicImage
         src="@/assets/edit.png"
         layout="constrained"

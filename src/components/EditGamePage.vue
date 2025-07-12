@@ -160,7 +160,7 @@ export default {
 <template>
   <div class="edit-game-page-container" v-if="game">
     <Sidebar v-if="game" :scenes="game.scenes" @addScene="addScene" @addScript="addScript" />
-    <Main />
+    <Main @createScene="addScene" @createScript="addScript" />
     <ModalWindow
       v-if="createScriptModalOpened"
       :header="'Создать диалог'"

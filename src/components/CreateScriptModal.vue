@@ -87,6 +87,12 @@ export default {
         this.errors[field] = false
       }
     },
+    npcEdited() {
+      this.npc = this.$refs.npc
+    },
+    mainCharacterEdited() {
+      this.main_character = this.$refs.main_char
+    }
   },
 }
 </script>
@@ -159,7 +165,7 @@ export default {
     <div class="create-script-modal-cell create-script-modal-characters">
       <h2 class="create-script-modal-h2">Персонажи</h2>
       <p><b>Главный персонаж</b></p>
-      <CharacterSelect :class="{ error: this.errors.main_character }" />
+      <CharacterSelect ref="main_char" @edited="mainCharacterEdited" :class="{ error: this.errors.main_character }" />
       <span class="error-label" v-if="this.errors.main_character"
         >Это поле обязательно для заполнения</span
       >
@@ -177,7 +183,7 @@ export default {
         </select>
       </div>
       <p><b>NPC</b></p>
-      <CharacterSelect :class="{ error: this.errors.npc }" />
+      <CharacterSelect ref="npc" @edited="npcEdited" :class="{ error: this.errors.npc }" />
       <span class="error-label" v-if="this.errors.npc">Это поле обязательно для заполнения</span>
       <div class="create-script-modal-name">
         <span>Отношение к главному персонажу</span>
