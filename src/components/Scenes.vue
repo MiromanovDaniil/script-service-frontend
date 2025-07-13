@@ -8,6 +8,7 @@
 
 <style scoped>
   #scenes {
+    background: #f3e8ff;
     height: calc(100% - 36px);
   }
 </style>

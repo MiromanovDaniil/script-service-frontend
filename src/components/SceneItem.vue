@@ -37,19 +37,19 @@ export default {
 </template>
 
 <style scoped>
-.panel[data-v-2f5682b3] {
+.panel[data-v-719ce23f] {
   padding: 0;
 }
 .accordion {
-  background: #eee;
+  background: #f3e8ff;
   color: #444;
   cursor: pointer;
   padding: 18px;
-  width: calc(100% - 36px);
   text-align: left;
   border: none;
   outline: none;
   transition: background 0.4s;
+  width: calc(100% - 36px);
 }
 
 .transition{
@@ -58,13 +58,13 @@ export default {
 
 .accordion.active,
 .accordion:hover {
-  background: #ccc;
+  background: #ffcefb;
 }
 
 .panel {
   width: 100%;
   padding: 0 18px;
-  background: #fff;
+  background: #f3e8ff;
   overflow: hidden;
 }
 
@@ -82,4 +82,6 @@ export default {
 .panel-leave-from {
   max-height: 500px;
 }
+
+
 </style>

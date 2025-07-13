@@ -31,7 +31,7 @@
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#888" />
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa" />
             </marker>
           </defs>
 
@@ -42,7 +42,7 @@
             :y1="l.y1"
             :x2="l.x2"
             :y2="l.y2"
-            stroke="#888"
+            stroke="#a78bfa"
             stroke-width="2"
             marker-end="url(#arrow)"
           />
@@ -57,7 +57,9 @@
             :style="{ left: node.meta?.x + 'px', top: node.meta?.y + 'px' }"
           >
             <div class="node-content">
-              <div class="text">{{ node.line }}</div>
+              <div class="text" :title="node.line">
+                {{ node.line.split(' ').slice(0, 10).join(' ') }}...
+              </div>
               <div class="actions">
                 <button @click="() => addChild(node)">+</button>
                 <button @click="() => deleteNode(node)">🗑</button>
@@ -131,40 +133,73 @@ const offsetY = ref(0)
 const canvasRef = ref<HTMLDivElement | null>(null)
 
 function findNodeById(id: string | number): GraphNode | undefined {
-  return scenario.value.data.find(n => n.id == id); // Нестрогое сравнение ==
+  // Используем == вместо === для сравнения строк и чисел
+  return scenario.value.data.find(n => n.id == id);
 }
 
 function layoutTree() {
-  const hGap = 180;
-  const vGap = 120;
-  const next = { val: 0 };
+  const hGap = 300;
+  const vGap = 200;
+  const visited = new Set<string | number>();
+  const nextMap = new Map<number, number>(); // Для отслеживания позиций на уровнях
 
   function walk(node: GraphNode, depth: number) {
+    if (!node || visited.has(node.id)) return;
+    visited.add(node.id);
+    
     if (!node.meta) node.meta = {};
     if (!node.to) node.to = [];
-
-    // Получаем полные узлы из связей
+    
+    // Инициализация счетчика для уровня
+    if (!nextMap.has(depth)) nextMap.set(depth, 0);
+    const next = nextMap.get(depth)!;
+    
+    // Обработка детей
     const children = node.to
       .map(edge => findNodeById(edge.id))
       .filter((c): c is GraphNode => !!c);
-
+    
     if (children.length === 0) {
-      node.meta.x = next.val * hGap;
+      node.meta.x = next * hGap;
       node.meta.y = depth * vGap;
-      next.val++;
+      nextMap.set(depth, next + 1);
     } else {
-      const start = next.val;
-      children.forEach((c) => walk(c, depth + 1));
-      const end = next.val - 1;
-      const mid = (start + end) / 2;
-      node.meta.x = mid * hGap;
+      // Сохраняем начальную позицию для детей
+      const startDepth = depth + 1;
+      children.forEach(child => walk(child, startDepth));
+      
+      // Позиционируем родителя по центру детей
+      const childPositions = children
+        .filter(c => c.meta?.x !== undefined)
+        .map(c => c.meta!.x!);
+      
+      if (childPositions.length > 0) {
+        const minX = Math.min(...childPositions);
+        const maxX = Math.max(...childPositions);
+        node.meta.x = (minX + maxX) / 2;
+      } else {
+        node.meta.x = next * hGap;
+      }
+      
       node.meta.y = depth * vGap;
+      nextMap.set(depth, next + 1);
     }
   }
 
+  // Сбрасываем счетчики и обходим от корня
+  visited.clear();
+  nextMap.clear();
+  
   if (currentRoot.value) {
     walk(currentRoot.value, 0);
   }
+  
+  // Обрабатываем несвязанные узлы
+  scenario.value.data.forEach(node => {
+    if (!visited.has(node.id)) {
+      walk(node, 0);
+    }
+  });
 }
 
 function animateCenterTo(x: number, y: number) {
@@ -288,7 +323,27 @@ onMounted(() => {
 
     currentRoot.value = scenario.value.data[0];
     layoutTree();
-    nextTick(() => centerCanvasToRoot());
+    nextTick(() => {
+  layoutTree();
+  
+  // Центрируем на весь граф
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+
+  flatNodes.value.forEach(node => {
+    const x = node.meta?.x || 0;
+    const y = node.meta?.y || 0;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  });
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  
+  animateCenterTo(centerX, centerY);
+});
   }
       }
     }
@@ -313,28 +368,35 @@ onBeforeUnmount(() => {
 })
 
 const flatNodes = computed(() => {
-  const visited = new Set<string>()
-  const result: GraphNode[] = []
+  const result: GraphNode[] = [];
+  const visited = new Set<string | number>();
 
+  // Рекурсивный обход с обработкой всех детей
   function walk(node: GraphNode) {
-    // Проверка на существование node
-    if (!node) return;
-    if (visited.has(node.id)) return;
+    if (!node || visited.has(node.id)) return;
     
     visited.add(node.id);
     result.push(node);
     
-    // Используем node.to или пустой массив по умолчанию
-    (node.to || []).forEach((id) => {
-      const child = findNodeById(id);
+    // Обрабатываем все дочерние связи
+    node.to.forEach(edge => {
+      const child = findNodeById(edge.id);
       if (child) walk(child);
     });
   }
 
-  // Проверяем currentRoot перед вызовом walk
+  // Обход начинаем только с корневого узла
   if (currentRoot.value) {
     walk(currentRoot.value);
   }
+  
+  // Добавляем несвязанные узлы (если есть)
+  scenario.value.data.forEach(node => {
+    if (!visited.has(node.id)) {
+      result.push(node);
+    }
+  });
+
   return result;
 });
 
@@ -350,11 +412,9 @@ const lines = computed(() => {
   const visited = new Set<string | number>();
 
   function walk(node: GraphNode) {
-    if (!node) return;
-    if (visited.has(node.id)) return;
-    
+    if (!node || visited.has(node.id)) return;
     visited.add(node.id);
-
+    
     node.to.forEach(edge => {
       const child = findNodeById(edge.id);
       if (child && node.meta && child.meta) {
@@ -393,9 +453,14 @@ const lines = computed(() => {
     });
   }
 
-  if (currentRoot.value) {
-    walk(currentRoot.value);
-  }
+  // Обработка всех узлов
+  visited.clear();
+  scenario.value.data.forEach(node => {
+    if (!visited.has(node.id)) {
+      walk(node);
+    }
+  });
+  
   return arr;
 });
 
@@ -502,8 +567,8 @@ function connectNode(targetNode: GraphNode) {
   width: 100%;
   height: 100%;
   padding: 16px;
-  background: #121212;
-  color: #eee;
+  background: #f3e8ff;
+  color: #3b0764;
   box-sizing: border-box;
 }
 
@@ -512,10 +577,10 @@ function connectNode(targetNode: GraphNode) {
   font-size: 1rem;
   margin-bottom: 12px;
   padding: 6px 8px;
-  background: #1e1e1e;
-  border: 1px solid #444;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
   border-radius: 4px;
-  color: inherit;
+  color: #3b0764;
   width: 100%;
 }
 
@@ -537,15 +602,15 @@ function connectNode(targetNode: GraphNode) {
 
 .crumb {
   cursor: pointer;
-  color: #5af;
+  color: #9333ea; 
   user-select: none;
 }
 
 .canvas {
   position: relative;
   height: 600px;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: #e9d5ff; /* пастельный фиолетовый */
+  border: 1px solid #d8b4fe;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -574,16 +639,16 @@ function connectNode(targetNode: GraphNode) {
 .node {
   position: absolute;
   width: 120px;
-  background: #282828;
-  border: 1px solid #444;
+  background: #ddd6fe;
+  border: 1px solid #c4b5fd;
   border-radius: 6px;
   padding: 6px;
-  color: #ddd;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  color: #3b0764;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.3);
 }
 
 .node.selected {
-  outline: 2px solid #5af;
+  outline: 2px solid #7c3aed;
 }
 
 .node-content .text {
@@ -601,13 +666,13 @@ function connectNode(targetNode: GraphNode) {
   font-size: 0.8em;
   padding: 2px 6px;
   border: none;
-  background: #444;
-  color: #fff;
+  background: #c4b5fd;
+  color: #3b0764;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .actions button:hover {
-  background: #666;
+  background: #a78bfa;
 }
 </style>

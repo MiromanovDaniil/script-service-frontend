@@ -11,13 +11,16 @@
 <style>
 body {
   overflow: hidden;
+  
+  background-color: #f3e8ff;
 }
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #631E9B;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -26,7 +29,7 @@ body {
 .btn {
   background: none;
   cursor: pointer;
-  border: #363636 1px solid;
+  border: #30015f 1px solid;
   padding: 7px 4.5%;
   border-radius: 7px;
 }
@@ -66,4 +69,16 @@ body {
   font-size: small;
   flex-basis: 100%;
 }
+.input {
+  background-color: #f3e8ff;
+  border: #30015f 1px solid;
+  border-radius: 10px;
+  height: fit-content;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  color: #30015f; 
+}
+
+
 </style>
