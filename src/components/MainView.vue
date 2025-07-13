@@ -11,18 +11,6 @@
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
 
-    <div class="breadcrumbs">
-      <span
-        v-for="(node, i) in breadcrumbs"
-        :key="node.id"
-        class="crumb"
-        @click="openBreadcrumb(i)"
-      >
-        {{ i === 0 ? 'В начало' : node.line.slice(0, 20) }}
-        <span v-if="i < breadcrumbs.length - 1"> / </span>
-      </span>
-    </div>
-
     <div class="canvas" ref="canvasRef" @mousedown="startPan">
       <div class="canvas-content" :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }">
         <svg
@@ -92,21 +80,26 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const emit = defineEmits(['createScene'])
 
+interface GraphEdge {
+  id: string | number;
+  line: string;
+}
+
 interface GraphNode {
-  id: string
-  line: string
-  info: string
-  type: string
-  mood: string
-  goal_achieve: number
-  to: string[]
-  meta?: { x?: number; y?: number }
+  id: string | number;
+  line: string;
+  info: string;
+  type?: string;       // сделаем необязательным
+  mood?: string;       // сделаем необязательным
+  goal_achieve?: number; // сделаем необязательным
+  to: GraphEdge[];     // теперь здесь объекты связей
+  meta?: { x?: number; y?: number };
 }
 
 interface Scenario {
-  name: string
-  description: string
-  data: GraphNode[]
+  name: string;
+  description: string;
+  data: GraphNode[];
 }
 
 const scenario = ref<Scenario>({
@@ -137,43 +130,40 @@ const offsetX = ref(0)
 const offsetY = ref(0)
 const canvasRef = ref<HTMLDivElement | null>(null)
 
-function findNodeById(id: string): GraphNode | undefined {
-  const node = scenario.value.data.find((n) => n.id === id)
-  if (node && !node.meta) {
-    node.meta = {}
-  }
-  return node
+function findNodeById(id: string | number): GraphNode | undefined {
+  return scenario.value.data.find(n => n.id == id); // Нестрогое сравнение ==
 }
 
 function layoutTree() {
-  const hGap = 180
-  const vGap = 120
-  const next = { val: 0 }
+  const hGap = 180;
+  const vGap = 120;
+  const next = { val: 0 };
 
   function walk(node: GraphNode, depth: number) {
-    // Инициализируем meta если его нет
-    if (!node.meta) {
-      node.meta = {}
-    }
-    const children = node.to.map(findNodeById).filter((c): c is GraphNode => !!c)
+    if (!node.meta) node.meta = {};
+    if (!node.to) node.to = [];
+
+    // Получаем полные узлы из связей
+    const children = node.to
+      .map(edge => findNodeById(edge.id))
+      .filter((c): c is GraphNode => !!c);
 
     if (children.length === 0) {
-      node.meta.x = next.val * hGap
-      node.meta.y = depth * vGap
-      next.val++
+      node.meta.x = next.val * hGap;
+      node.meta.y = depth * vGap;
+      next.val++;
     } else {
-      const start = next.val
-      children.forEach((c) => walk(c, depth + 1))
-      const end = next.val - 1
-      const mid = (start + end) / 2
-      node.meta.x = mid * hGap
-      node.meta.y = depth * vGap
+      const start = next.val;
+      children.forEach((c) => walk(c, depth + 1));
+      const end = next.val - 1;
+      const mid = (start + end) / 2;
+      node.meta.x = mid * hGap;
+      node.meta.y = depth * vGap;
     }
   }
 
-  // Добавляем проверку на существование currentRoot.value
   if (currentRoot.value) {
-    walk(currentRoot.value, 0)
+    walk(currentRoot.value, 0);
   }
 }
 
@@ -249,77 +239,74 @@ function endPan() {
 }
 
 onMounted(() => {
-  if (state.selectedSceneId === null) {
-    emit('createScene')
-  } else if (state.selectedScriptId === null) {
-    emit('createScene')
+  if (state.selectedSceneId === null || state.selectedScriptId === null) {
+    emit('createScene');
   } else {
-    const game = state.games.find(g => g.id === route.params.id)
+    const game = state.games.find(g => g.id === route.params.id);
     if (game) {
-      const scene = game.scenes.find(s => s.id === state.selectedSceneId)
+      const scene = game.scenes.find(s => s.id === state.selectedSceneId);
       if (scene) {
-        const script = scene.scripts.find(s => s.id === state.selectedScriptId)
+        const script = scene.scripts.find(s => s.id === state.selectedScriptId);
         if (script) {
-          // Проверяем, что result существует и является массивом
-          let loadedData: GraphNode[] = []
+    let loadedData: GraphNode[] = [];
+    
+    if (Array.isArray(script.result?.data)) {
+      loadedData = script.result.data.map(node => ({
+        ...node,
+        to: node.to ? node.to.map(edge => ({ 
+          id: edge.id, 
+          line: edge.line || '' 
+        })) : [],
+        meta: node.meta || {}
+      }));
+    }
 
-          if (Array.isArray(script.result)) {
-            // Если result - массив, используем его
-            loadedData = script.result.map(node => ({
-              ...node,
-              meta: node.meta || {} // Добавляем meta если его нет
-            }))
-          } else if (script.result && typeof script.result === 'object') {
-            // Если result - объект (возможно старая версия), преобразуем в массив
-            loadedData = Object.values(script.result).map((node: any) => ({
-              ...node,
-              meta: node.meta || {}
-            }))
-          } else {
-            // Если данных нет, создаем начальный узел
-            loadedData = [{
-              id: 'root',
-              line: 'Начало',
-              info: '',
-              type: 'start',
-              mood: 'neutral',
-              goal_achieve: 0,
-              to: [],
-              meta: {}
-            }]
-          }
+    if (script?.result?.data) {
+      scenario.value.data = script.result.data.map(node => ({
+        ...node,
+        to: node.to || [], // Гарантируем, что to будет массивом
+        meta: node.meta || {}
+      }));
+    }
 
-          scenario.value = {
-            name: script.name || 'Новый диалог',
-            description: script.description || '',
-            data: loadedData
-          }
+    // Если данных нет - создаем корневой узел
+    if (loadedData.length === 0) {
+      loadedData = [{
+        id: 1,
+        line: 'Начало',
+        info: '',
+        to: [],
+        meta: {}
+      }];
+    }
 
-          // Находим корневой узел (с type === 'start' или первый в массиве)
-          currentRoot.value = scenario.value.data.find(n => n.type === 'start') || scenario.value.data[0]
+    scenario.value = {
+      name: script.name || 'Новый диалог',
+      description: script.description || '',
+      data: loadedData
+    };
 
-          if (!currentRoot.value) {
-            // Если вообще нет узлов, создаем корневой
-            currentRoot.value = {
-              id: 'root',
-              line: 'Начало',
-              info: '',
-              type: 'start',
-              mood: 'neutral',
-              goal_achieve: 0,
-              to: [],
-              meta: {}
-            }
-            scenario.value.data.push(currentRoot.value)
-          }
-
-          layoutTree()
-          nextTick(() => centerCanvasToRoot())
-        }
+    currentRoot.value = scenario.value.data[0];
+    layoutTree();
+    nextTick(() => centerCanvasToRoot());
+  }
       }
     }
   }
-})
+});
+
+function createRootNode(): GraphNode {
+  return {
+    id: 'root',
+    line: 'Начало',
+    info: '',
+    type: 'start',
+    mood: 'neutral',
+    goal_achieve: 0,
+    to: [],
+    meta: { x: 0, y: 0 }
+  };
+}
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', centerCanvasToRoot)
@@ -330,18 +317,26 @@ const flatNodes = computed(() => {
   const result: GraphNode[] = []
 
   function walk(node: GraphNode) {
-    if (visited.has(node.id)) return
-    visited.add(node.id)
-    result.push(node)
-    node.to.forEach((id) => {
-      const child = findNodeById(id)
-      if (child) walk(child)
-    })
+    // Проверка на существование node
+    if (!node) return;
+    if (visited.has(node.id)) return;
+    
+    visited.add(node.id);
+    result.push(node);
+    
+    // Используем node.to или пустой массив по умолчанию
+    (node.to || []).forEach((id) => {
+      const child = findNodeById(id);
+      if (child) walk(child);
+    });
   }
 
-  walk(currentRoot.value)
-  return result
-})
+  // Проверяем currentRoot перед вызовом walk
+  if (currentRoot.value) {
+    walk(currentRoot.value);
+  }
+  return result;
+});
 
 interface Line {
   x1: number
@@ -351,20 +346,22 @@ interface Line {
 }
 
 const lines = computed(() => {
-  const arr: Line[] = []
-  const visited = new Set<string>()
+  const arr: Line[] = [];
+  const visited = new Set<string | number>();
 
   function walk(node: GraphNode) {
-    if (visited.has(node.id)) return
-    visited.add(node.id)
+    if (!node) return;
+    if (visited.has(node.id)) return;
+    
+    visited.add(node.id);
 
-    node.to.forEach((id) => {
-      const child = findNodeById(id)
+    node.to.forEach(edge => {
+      const child = findNodeById(edge.id);
       if (child && node.meta && child.meta) {
-        const startCenterX = node.meta.x! + NODE_WIDTH / 2
-        const startCenterY = node.meta.y! + NODE_HEIGHT / 2
-        const endCenterX = child.meta.x! + NODE_WIDTH / 2
-        const endCenterY = child.meta.y! + NODE_HEIGHT / 2
+        const startCenterX = node.meta.x! + NODE_WIDTH / 2;
+        const startCenterY = node.meta.y! + NODE_HEIGHT / 2;
+        const endCenterX = child.meta.x! + NODE_WIDTH / 2;
+        const endCenterY = child.meta.y! + NODE_HEIGHT / 2;
 
         const start = getRectEdgeIntersection(
           startCenterX,
@@ -373,7 +370,7 @@ const lines = computed(() => {
           NODE_HEIGHT,
           endCenterX,
           endCenterY
-        )
+        );
 
         const end = getRectEdgeIntersection(
           endCenterX,
@@ -382,26 +379,25 @@ const lines = computed(() => {
           NODE_HEIGHT,
           startCenterX,
           startCenterY
-        )
+        );
 
         arr.push({
           x1: start.x,
           y1: start.y,
           x2: end.x,
           y2: end.y,
-        })
+        });
 
-        walk(child)
+        walk(child);
       }
-    })
+    });
   }
 
-  walk(currentRoot.value)
-  return arr
-})
-
-
-
+  if (currentRoot.value) {
+    walk(currentRoot.value);
+  }
+  return arr;
+});
 
 const svgWidth = computed(() => {
   const maxX = Math.max(...flatNodes.value.map(n => (n.meta?.x ?? 0) + NODE_WIDTH))
@@ -413,33 +409,50 @@ const svgHeight = computed(() => {
   return maxY + 100
 })
 
-function addChild(node: GraphNode) {
+function addChild(parentNode: GraphNode) {
+  const newId = Date.now(); // Генерируем числовой ID
+  
   const newNode: GraphNode = {
-    id: Date.now().toString(),
+    id: newId,
     line: 'Новый узел',
     info: '',
-    type: 'normal',
-    mood: 'neutral',
-    goal_achieve: 0,
-    to: [],
-    meta: {},
-  }
+    to: [], // Пустой массив связей для нового узла
+    meta: {}
+  };
 
-  scenario.value.data.push(newNode)
-  node.to.push(newNode.id)
-  layoutTree()
-  nextTick(() => centerCanvasToNode(newNode))
+  // Добавляем новый узел в массив данных
+  scenario.value.data.push(newNode);
+  
+  // Добавляем связь от родительского узла к новому
+  parentNode.to.push({
+    id: newId,
+    line: newNode.line
+  });
+
+  // Перестраиваем дерево и центрируем на новый узел
+  layoutTree();
+  nextTick(() => centerCanvasToNode(newNode));
 }
 
-function deleteNode(target: GraphNode) {
-  scenario.value.data = scenario.value.data.filter((n) => n.id !== target.id)
-  scenario.value.data.forEach((n) => {
-    n.to = n.to.filter((childId) => childId !== target.id)
-  })
+function deleteNode(nodeToDelete: GraphNode) {
+  // 1. Удаляем сам узел из данных
+  scenario.value.data = scenario.value.data.filter(
+    node => node.id !== nodeToDelete.id
+  );
 
-  if (currentRoot.value.id === target.id) back()
-  layoutTree()
-  centerCanvasToRoot()
+  // 2. Удаляем все ссылки на этот узел из других узлов
+  scenario.value.data.forEach(node => {
+    node.to = node.to.filter(edge => edge.id !== nodeToDelete.id);
+  });
+
+  // 3. Если удалили текущий корень - возвращаемся назад
+  if (currentRoot.value?.id === nodeToDelete.id) {
+    back();
+  }
+
+  // 4. Перестраиваем дерево и центрируем
+  layoutTree();
+  centerCanvasToRoot();
 }
 
 function back() {
@@ -458,54 +471,30 @@ function openBreadcrumb(index: number) {
 
 const connectingFrom = ref<GraphNode | null>(null)
 
-function connectNode(node: GraphNode) {
+function connectNode(targetNode: GraphNode) {
   if (!connectingFrom.value) {
-    connectingFrom.value = node
+    // Если начало связи не выбрано - выбираем текущий узел
+    connectingFrom.value = targetNode;
   } else {
-    const from = connectingFrom.value
-    const to = node
-
-    const alreadyConnected = from.to.includes(to.id)
-    const sameNode = from.id === to.id
-
-    if (!alreadyConnected && !sameNode) {
-      from.to.push(to.id)
+    // Если начало связи уже выбрано - создаём связь
+    const sourceNode = connectingFrom.value;
+    
+    // Проверяем, что связь не ведёт к тому же узлу и не дублируется
+    const isSameNode = sourceNode.id === targetNode.id;
+    const alreadyConnected = sourceNode.to.some(edge => edge.id == targetNode.id);
+    
+    if (!isSameNode && !alreadyConnected) {
+      sourceNode.to.push({
+        id: targetNode.id,
+        line: targetNode.line
+      });
     }
-
-    connectingFrom.value = null
-    layoutTree()
+    
+    // Сбрасываем выбор начала связи
+    connectingFrom.value = null;
+    layoutTree();
   }
 }
-
-onMounted(() => {
-  if (state.selectedSceneId === null) {
-    emit('createScene')
-  } else if (state.selectedScriptId === null) {
-    emit('createScene')
-  } else {
-    // Load existing scenario data if available
-    const game = state.games.find(g => g.id === route.params.id)
-    if (game) {
-      const scene = game.scenes.find(s => s.id === state.selectedSceneId)
-      if (scene) {
-        const script = scene.scripts.find(s => s.id === state.selectedScriptId)
-        if (script && script.result) {
-          if (Object.keys(script.result).length === 0) {
-            return
-          }
-          scenario.value = {
-            name: script.name || 'Новый диалог',
-            description: script.description || '',
-            data: script.result
-          }
-          currentRoot.value = scenario.value.data[0] || scenario.value.data[0]
-          layoutTree()
-          nextTick(() => centerCanvasToRoot())
-        }
-      }
-    }
-  }
-})
 </script>
 
 <style scoped>
