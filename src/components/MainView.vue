@@ -1,5 +1,6 @@
 ﻿<template>
-  <div class="scenario-view">
+  <div class="scenario-view"
+  >
     <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
     <textarea
       v-model="scenario.description"
