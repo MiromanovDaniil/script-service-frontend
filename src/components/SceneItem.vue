@@ -29,27 +29,27 @@ export default {
 
     <transition class="transition" name="panel">
       <div v-show="isOpen" class="panel">
-        <ScriptItem v-for="script of scene.scripts" :key="script.id" :script="script"/>
-        <span v-if="scene.scripts.length === 0" class="no-scripts">There's no scripts in this game</span>
+        <ScriptItem v-for="script of scene.scripts" :key="script.id" :scene="scene" :script="script"/>
+        <span v-if="scene.scripts.length === 0" class="no-scripts">В игре еще нет сцен</span>
       </div>
     </transition>
   </div>
 </template>
 
 <style scoped>
-.panel[data-v-719ce23f] {
+.panel.transition {
   padding: 0;
 }
 .accordion {
-  background: #eee;
+  background: #f3e8ff;
   color: #444;
   cursor: pointer;
   padding: 18px;
-  width: 100%;
   text-align: left;
   border: none;
   outline: none;
   transition: background 0.4s;
+  width: calc(100% - 36px);
 }
 
 .transition{
@@ -58,13 +58,13 @@ export default {
 
 .accordion.active,
 .accordion:hover {
-  background: #ccc;
+  background: #ffcefb;
 }
 
 .panel {
   width: 100%;
   padding: 0 18px;
-  background: #fff;
+  background: #f3e8ff;
   overflow: hidden;
 }
 

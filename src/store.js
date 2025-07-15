@@ -1,4 +1,4 @@
-﻿import { reactive, watch } from 'vue'
+﻿import { reactive, toRaw, watch } from 'vue'
 
 // СТРУКТУРА ДАННЫХ
 const defaultState = {
@@ -26,7 +26,7 @@ const state = reactive(load())
 watch(
   () => state,
   (val) => {
-    localStorage.setItem('scenario-data', JSON.stringify(val))
+    localStorage.setItem('scenario-data', JSON.stringify(toRaw(val)))
   },
   { deep: true }
 )

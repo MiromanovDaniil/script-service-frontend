@@ -1,16 +1,22 @@
-import axios from 'axios'
-import { ref } from 'vue'
+import axios from 'axios';
 
-const postData = ref('')
-
-export const submitData = async () => {
+// Функция для отправки данных
+export const submitDialogData = async (data) => {
   try {
-    const res = await axios.get('https://jsonplaceholder.typicode.com/todos/1')
-    postData.value = res.data
-    console.log(res.data)
-  } catch (error) {
-    console.error('Error submitting data:', error)
-  }
-}
+    const response = await axios.post(
+      'http://10.82.46.222:8005/api/generate', // Замените на реальный URL API
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
 
-export { postData }
+          // 'Authorization': 'Bearer your_token' // Раскомментируйте если нужна авторизация
+        },
+      },
+    )
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при отправке данных:', error);
+    throw error;
+  }
+};
