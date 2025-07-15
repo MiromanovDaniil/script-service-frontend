@@ -29,7 +29,7 @@
           </div>
 
           <div>
-            <label>Настроение</label>
+            <label>Характер</label>
             <input type="text" v-model="mood" class="input" />
           </div>
 
@@ -42,11 +42,7 @@
             <label>Внешний вид</label>
             <textarea v-model="appearance" class="textarea" rows="3"></textarea>
           </div>
-
-          <div>
-            <label>Дополнительно</label>
-            <textarea v-model="extra" class="textarea" rows="3"></textarea>
-          </div>
+          
         </div>
       </div>
 </template>

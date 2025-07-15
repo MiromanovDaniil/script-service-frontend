@@ -70,7 +70,7 @@ body {
   flex-basis: 100%;
 }
 .input {
-  background-color: #f3e8ff;
+  background-color: #f7f0ff;
   border: #30015f 1px solid;
   border-radius: 10px;
   height: fit-content;
