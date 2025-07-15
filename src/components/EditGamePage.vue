@@ -171,7 +171,8 @@ export default {
       scenes: [],
       game: null,
       answerLoadingModalOpened: false,
-      createCharacterModalOpened: true,
+      createCharacterModalOpened: false,
+      
     }
   },
   mounted() {
@@ -220,6 +221,9 @@ export default {
     >
       <CreateScriptModal ref="child" />
     </ModalWindow>
+
+  
+
     <ModalWindow
       v-if="createSceneModalOpened"
       :header="'Создать сцену'"
@@ -229,6 +233,8 @@ export default {
     >
       <CreateSceneModal ref="sceneChild" />
     </ModalWindow>
+
+    
     <ModalWindow
       v-if="answerLoadingModalOpened"
       :header="'Идет загрузка...'"

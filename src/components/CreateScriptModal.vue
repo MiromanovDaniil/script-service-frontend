@@ -138,7 +138,7 @@ export default {
           <label
             class="create-script-modal-count-answers-label label"
             for="create-script-modal-count-answers-input"
-            >Ответы главного персонажа:</label
+            >Глубина дерева диалогов:</label
           >
           <span> от </span>
           <input

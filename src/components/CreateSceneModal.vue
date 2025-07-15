@@ -61,14 +61,14 @@ export default {
 <template>
   <div class="create-scene-modal-container">
     <div class="create-scene-modal-cell create-scene-modal-name">
-      <h2 class="create-scene-modal-h2 create-scene-modal-name-text">Имя</h2>
+      <h2 class="create-scene-modal-h2 create-scene-modal-name-text">Название</h2>
       <div class="input-wrapper">
         <input class="input" type="text" v-model="name" :class="{error: this.errors.name}" />
         <span class="error-label" v-if="this.errors.name">Это поле обязательно для заполнения</span>
       </div>
     </div>
     <div class="create-scene-modal-cell create-scene-modal-description">
-      <h2 class="create-scene-modal-h2">Краткое содержание</h2>
+      <h2 class="create-scene-modal-h2">Характеристика сцены</h2>
       <textarea class="input create-scene-modal-textarea-input" v-model="description" :class="{error: this.errors.description}" />
       <span class="error-label" v-if="this.errors.description">Это поле обязательно для заполнения</span>
     </div>
