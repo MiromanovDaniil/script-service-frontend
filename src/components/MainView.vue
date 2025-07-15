@@ -57,8 +57,9 @@
             :style="{ left: node.meta?.x + 'px', top: node.meta?.y + 'px' }"
           >
             <div class="node-content">
-              <div class="text" :title="node.line">
-                {{ node.line.split(' ').slice(0, 10).join(' ') }}...
+              <div class="text-container">
+                <div class="text-short">{{ node.line.split(' ').slice(0, 10).join(' ') }}...</div>
+                <div class="text-full">{{ node.line }}</div>
               </div>
               <div class="actions">
                 <button @click="() => addChild(node)">+</button>
@@ -274,9 +275,6 @@ function endPan() {
 }
 
 onMounted(() => {
-  if (state.selectedSceneId === null || state.selectedScriptId === null) {
-    emit('createScene');
-  } else {
     const game = state.games.find(g => g.id === route.params.id);
     if (game) {
       const scene = game.scenes.find(s => s.id === state.selectedSceneId);
@@ -348,7 +346,7 @@ onMounted(() => {
       }
     }
   }
-});
+);
 
 function createRootNode(): GraphNode {
   return {
@@ -570,6 +568,7 @@ function connectNode(targetNode: GraphNode) {
   background: #f3e8ff;
   color: #3b0764;
   box-sizing: border-box;
+  user-select: none;
 }
 
 .scenario-description,
@@ -613,6 +612,11 @@ function connectNode(targetNode: GraphNode) {
   border: 1px solid #d8b4fe;
   border-radius: 8px;
   overflow: hidden;
+  cursor:grab;
+}
+
+.canvas:active {
+  cursor: grabbing;
 }
 
 .canvas-content {
@@ -637,6 +641,7 @@ function connectNode(targetNode: GraphNode) {
 }
 
 .node {
+  cursor: pointer;
   position: absolute;
   width: 120px;
   background: #ddd6fe;
@@ -674,5 +679,34 @@ function connectNode(targetNode: GraphNode) {
 
 .actions button:hover {
   background: #a78bfa;
+}
+
+.text-container {
+  position: relative;
+}
+
+.text-full {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ddd6fe;
+  border: 1px solid #ddd;
+  padding: 8px;
+  z-index: 100;
+  width: 300px;
+  border: 1px solid #c4b5fd;
+  border-radius: 6px;
+  padding: 6px;
+  color: #3b0764;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.3);
+}
+
+.text-container:hover .text-short {
+  display: none;
+}
+
+.text-container:hover .text-full {
+  display: block;
 }
 </style>

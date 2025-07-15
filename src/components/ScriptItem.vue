@@ -1,4 +1,5 @@
 ﻿<script>
+import { state } from "@/store";
 import { script } from "../types";
 
 export default {
@@ -7,13 +8,23 @@ export default {
       script: {
         type: Object,
         required: true
+      },
+      scene: {
+        type: Object,
+        required: true
+      }
+    },
+    methods: {
+      openScript() {
+        state.selectedSceneId = this.scene.id;
+        state.selectedScriptId = this.script.id;
       }
     }
 };
 </script>
 
 <template>
-  <div class="script-item scenes">
+  <div class="script-item scenes" @click="openScript">
     {{script.name}}
   </div>
 </template>

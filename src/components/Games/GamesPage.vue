@@ -7,6 +7,8 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 if (route.name === 'main') {
   state.selectedGameId = null
+  state.selectedSceneId = null
+  state.selectedScriptId = null
 }
 </script>
 

@@ -27,6 +27,7 @@ export default{
   </div>
 </template>
 
+
 <style scoped>
  .modal-window-container{
    position: absolute;

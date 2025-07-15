@@ -1,6 +1,6 @@
 ﻿<script lang="ts">
 import Sidebar from './Sidebar.vue'
-import Main from './MainView.vue'
+import MainView from './MainView.vue'
 import ModalWindow from './ModalWindow.vue'
 import CreateScriptModal from './CreateScriptModal.vue'
 import CreateSceneModal from './CreateSceneModal.vue'
@@ -25,7 +25,7 @@ export default {
     CreateSceneModal,
     ModalWindow,
     Sidebar,
-    Main,
+    MainView,
     CreateCharacterModal,
   },
   methods: {
@@ -164,7 +164,8 @@ export default {
 <template>
   <div class="edit-game-page-container" v-if="game">
     <Sidebar v-if="game" :scenes="game.scenes" @addScene="addScene" @addScript="addScript" />
-    <Main @createScene="addScene" @createScript="addScript" />
+    <MainView v-if="!(state.selectedSceneId === null || state.selectedScriptId === null)" @createScene="addScene" @createScript="addScript" />
+    <span v-else>Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
       :header="'Создать диалог'"

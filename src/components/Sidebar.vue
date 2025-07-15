@@ -1,5 +1,6 @@
 ﻿<template>
   <div id="sidebar">
+    <button @click="exit" class="btn">Выйти</button>    
     <button @click="addScene" class="btn">Создать сцену</button>
     <Scenes @addScript="addScript" :scenes="scenes"/>
   </div>
@@ -62,6 +63,9 @@ export default {
     },
     addScene() {
       this.$emit('addScene', state.selectedGameId);
+    },
+    exit() {
+      this.$router.push('/');
     }
   }
 }
