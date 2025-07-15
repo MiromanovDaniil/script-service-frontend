@@ -36,17 +36,33 @@
             </marker>
           </defs>
 
+
+
           <line
-            v-for="(l, i) in lines"
-            :key="i"
-            :x1="l.x1"
-            :y1="l.y1"
-            :x2="l.x2"
-            :y2="l.y2"
-            stroke="#a78bfa"
-            stroke-width="2"
-            marker-end="url(#arrow)"
-          />
+  v-for="(l, i) in lines"
+  :key="'line-' + i"
+  :x1="l.x1"
+  :y1="l.y1"
+  :x2="l.x2"
+  :y2="l.y2"
+  stroke="#a78bfa"
+  stroke-width="2"
+  marker-end="url(#arrow)"
+/>
+<text
+  v-for="(l, i) in lines"
+  :key="'text-' + i"
+  :x="(l.x1 + l.x2) / 2"
+  :y="(l.y1 + l.y2) / 2 - 5"
+  fill="#4b5563"
+  font-size="12"
+  text-anchor="middle"
+>
+  {{ l.label.split(' ').slice(0, 5).join(' ') }}
+</text>
+
+
+
         </svg>
 
         <div class="canvas-inner">
@@ -404,6 +420,7 @@ interface Line {
   y1: number
   x2: number
   y2: number
+  label: string
 }
 
 const lines = computed(() => {
@@ -445,6 +462,7 @@ const lines = computed(() => {
           y1: start.y,
           x2: end.x,
           y2: end.y,
+          label: edge.line || ''
         });
 
         walk(child);
@@ -609,7 +627,7 @@ function connectNode(targetNode: GraphNode) {
 .canvas {
   position: relative;
   height: 600px;
-  background: #e9d5ff; /* пастельный фиолетовый */
+  background: #e9d5ff;
   border: 1px solid #d8b4fe;
   border-radius: 8px;
   overflow: hidden;
