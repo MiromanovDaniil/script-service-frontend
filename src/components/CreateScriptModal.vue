@@ -71,8 +71,7 @@ export default {
           } else if (
             value === null ||
             value === undefined ||
-            value === 0 ||
-            Object.keys(obj).length === 0
+            value === 0
           ) {
             errors.push(`Поле "${fieldLabels[field]}" обязательно для заполнения`)
             this.errors[field] = true

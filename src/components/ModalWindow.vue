@@ -22,7 +22,7 @@ export default{
       <button class="modal-dialog-close" v-if="showButtons" @click="closeModal">X</button>
       <div class="modal-dialog-header"><h1>{{header}}</h1></div>
       <div class="modal-dialog-body"><slot></slot></div>
-      <div class="modal-dialog-footer"><button class="btn" v-if="showButtons" type="submit">Сохранить</button></div>
+      <div class="modal-dialog-footer"><button class="btn save-btn" v-if="showButtons" type="submit">Сохранить</button></div>
     </form>
   </div>
 </template>
@@ -38,13 +38,16 @@ export default{
    justify-content: center;
  }
  .modal-dialog {
-   padding: 20px;
-   min-width: 30%;
-   z-index: 100;
-   background-color: white;
-   border-radius: 10px;
-   height: fit-content;
- }
+   background: #fff;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 12px 48px #ab72e780;
+    padding: 36px 38px 24px 38px;
+    position: relative;
+    overflow-y: hidden;
+    height: fit-content;
+  }
  .modal-window-background {
    position: absolute;
    width: 110%;
@@ -54,6 +57,10 @@ export default{
  .modal-dialog-header {
    justify-self: center;
  }
+ .modal-dialog-body {
+  max-height: 65vh;
+  overflow-y: auto;
+ }
  .modal-dialog-close{
    float: right;
    background: none;
@@ -61,9 +68,22 @@ export default{
    cursor: pointer;
  }
  .modal-dialog-footer {
-   margin-top: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
  }
  .modal-dialog-footer>.btn {
    float: right;
+ }
+ .save-btn {
+      background: linear-gradient(90deg, #c08cff 20%, #cde0ff 100%);
+    color: #601f7e;
+    border: none;
+    border-radius: 7px;
+    font-size: 18px;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 10px #e5d4ff33;
+    transition: background 0.2s, transform 0.1s;
  }
 </style>
