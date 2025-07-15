@@ -62,17 +62,24 @@
 </text>
 
 
-
         </svg>
 
         <div class="canvas-inner">
           <div
-            v-for="node in flatNodes"
-            :key="node.id"
-            class="node"
-            :class="{ selected: connectingFrom?.id === node.id }"
-            :style="{ left: node.meta?.x + 'px', top: node.meta?.y + 'px' }"
-          >
+    v-for="node in flatNodes"
+    :key="node.id"
+    class="node"
+    :class="{ 
+      selected: connectingFrom?.id === node.id,
+      dragging: draggingNode?.id === node.id
+    }"
+    :style="{ 
+      left: node.meta?.x + 'px', 
+      top: node.meta?.y + 'px',
+      cursor: draggingNode?.id === node.id ? 'grabbing' : 'grab'
+    }"
+    @mousedown="(e) => startDrag(e, node)"
+  >
             <div class="node-content">
               <div class="text-container">
                 <div class="text-short">{{ node.line.split(' ').slice(0, 10).join(' ') }}...</div>
@@ -96,6 +103,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
+
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
@@ -153,6 +161,48 @@ const canvasRef = ref<HTMLDivElement | null>(null)
 function findNodeById(id: string | number): GraphNode | undefined {
   // Используем == вместо === для сравнения строк и чисел
   return scenario.value.data.find(n => n.id == id);
+}
+
+
+const draggingNode = ref<GraphNode | null>(null);
+const dragStartX = ref(0);
+const dragStartY = ref(0);
+const nodeStartX = ref(0);
+const nodeStartY = ref(0);
+
+
+
+function startDrag(e: MouseEvent, node: GraphNode) {
+  e.stopPropagation();
+  draggingNode.value = node;
+  
+  // Запоминаем начальные позиции
+  dragStartX.value = e.clientX;
+  dragStartY.value = e.clientY;
+  nodeStartX.value = node.meta?.x || 0;
+  nodeStartY.value = node.meta?.y || 0;
+  
+  // Добавляем обработчики
+  window.addEventListener('mousemove', onDrag);
+  window.addEventListener('mouseup', endDrag);
+}
+
+function onDrag(e: MouseEvent) {
+  if (!draggingNode.value || !draggingNode.value.meta) return;
+  
+  // Вычисляем смещение
+  const dx = e.clientX - dragStartX.value;
+  const dy = e.clientY - dragStartY.value;
+  
+  // Обновляем позицию узла
+  draggingNode.value.meta.x = nodeStartX.value + dx;
+  draggingNode.value.meta.y = nodeStartY.value + dy;
+}
+
+function endDrag() {
+  draggingNode.value = null;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('mouseup', endDrag);
 }
 
 function layoutTree() {
@@ -727,5 +777,11 @@ function connectNode(targetNode: GraphNode) {
 
 .text-container:hover .text-full {
   display: block;
+}
+
+.node.dragging {
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  opacity: 0.9;
 }
 </style>
