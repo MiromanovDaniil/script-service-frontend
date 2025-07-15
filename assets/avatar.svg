@@ -1,0 +1,12 @@
+<!-- src/assets/avatar.svg -->
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+  <circle cx="20" cy="20" r="20" fill="url(#paint0_linear)" />
+  <ellipse cx="20" cy="15" rx="7" ry="7" fill="#fff" />
+  <ellipse cx="20" cy="29" rx="12" ry="7" fill="#fff" />
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d1b0fa"/>
+      <stop offset="1" stop-color="#aee2f7"/>
+    </linearGradient>
+  </defs>
+</svg>

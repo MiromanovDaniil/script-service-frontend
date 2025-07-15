@@ -79,7 +79,7 @@
 export default {
   name: "CreateGameModal",
   props: {
-    showDelete: { type: Boolean, default: false } // true если хочешь показывать иконку удаления
+    showDelete: { type: Boolean, default: false }
   },
   data() {
     return {

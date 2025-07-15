@@ -21,7 +21,7 @@ body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 97.5vh;
+  height: 100%;
 }
 .btn {
   background: none;
