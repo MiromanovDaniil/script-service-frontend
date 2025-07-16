@@ -74,16 +74,4 @@ export default{
  .modal-dialog-footer>.btn {
    float: right;
  }
- .save-btn {
-      background: linear-gradient(90deg, #c08cff 20%, #cde0ff 100%);
-    color: #601f7e;
-    border: none;
-    border-radius: 7px;
-    font-size: 18px;
-    padding: 8px 20px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: 0 2px 10px #e5d4ff33;
-    transition: background 0.2s, transform 0.1s;
- }
 </style>

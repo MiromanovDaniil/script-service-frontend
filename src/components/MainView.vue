@@ -12,8 +12,21 @@
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
 
-    <div class="canvas" ref="canvasRef" @mousedown="startPan">
-      <div class="canvas-content" :style="{ transform: `translate(${offsetX}px, ${offsetY}px)` }">
+
+    <div class="zoom-controls">
+      <button @click="zoomIn">+</button>
+      <button @click="resetZoom">100%</button>
+      <button @click="zoomOut">-</button>
+      <span class="scale-display">{{ Math.round(scale * 100) }}%</span>
+    </div>
+
+    
+
+    <div class="canvas" ref="canvasRef" @mousedown="startPan" @wheel="handleWheel">
+      <div class="canvas-content" :style="{ 
+          transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
+          transformOrigin: '0 0'
+        }">
         <svg
           class="lines"
           xmlns="http://www.w3.org/2000/svg"
@@ -59,20 +72,27 @@
   text-anchor="middle"
 >
   {{ l.label.split(' ').slice(0, 5).join(' ') }}
-</text>
-
+  </text>
 
 
         </svg>
 
         <div class="canvas-inner">
           <div
-            v-for="node in flatNodes"
-            :key="node.id"
-            class="node"
-            :class="{ selected: connectingFrom?.id === node.id }"
-            :style="{ left: node.meta?.x + 'px', top: node.meta?.y + 'px' }"
-          >
+    v-for="node in flatNodes"
+    :key="node.id"
+    class="node"
+    :class="{ 
+      selected: connectingFrom?.id === node.id,
+      dragging: draggingNode?.id === node.id
+    }"
+    :style="{ 
+      left: node.meta?.x + 'px', 
+      top: node.meta?.y + 'px',
+      cursor: draggingNode?.id === node.id ? 'grabbing' : 'grab'
+    }"
+    @mousedown="(e) => startDrag(e, node)"
+  >
             <div class="node-content">
               <div class="text-container">
                 <div class="text-short">{{ node.line.split(' ').slice(0, 10).join(' ') }}...</div>
@@ -97,6 +117,7 @@ import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 
+
 const route = useRoute()
 const emit = defineEmits(['createScene'])
 
@@ -109,10 +130,10 @@ interface GraphNode {
   id: string | number;
   line: string;
   info: string;
-  type?: string;       // сделаем необязательным
-  mood?: string;       // сделаем необязательным
-  goal_achieve?: number; // сделаем необязательным
-  to: GraphEdge[];     // теперь здесь объекты связей
+  type?: string;       
+  mood?: string;       
+  goal_achieve?: number; 
+  to: GraphEdge[];     
   meta?: { x?: number; y?: number };
 }
 
@@ -151,8 +172,46 @@ const offsetY = ref(0)
 const canvasRef = ref<HTMLDivElement | null>(null)
 
 function findNodeById(id: string | number): GraphNode | undefined {
-  // Используем == вместо === для сравнения строк и чисел
+  
   return scenario.value.data.find(n => n.id == id);
+}
+
+
+const draggingNode = ref<GraphNode | null>(null);
+const dragStartX = ref(0);
+const dragStartY = ref(0);
+const nodeStartX = ref(0);
+const nodeStartY = ref(0);
+
+
+
+function startDrag(e: MouseEvent, node: GraphNode) {
+  e.stopPropagation();
+  draggingNode.value = node;
+  
+  dragStartX.value = e.clientX;
+  dragStartY.value = e.clientY;
+  nodeStartX.value = node.meta?.x || 0;
+  nodeStartY.value = node.meta?.y || 0;
+  
+  window.addEventListener('mousemove', onDrag);
+  window.addEventListener('mouseup', endDrag);
+}
+
+function onDrag(e: MouseEvent) {
+  if (!draggingNode.value || !draggingNode.value.meta) return;
+  
+  const dx = e.clientX - dragStartX.value;
+  const dy = e.clientY - dragStartY.value;
+  
+  draggingNode.value.meta.x = nodeStartX.value + dx;
+  draggingNode.value.meta.y = nodeStartY.value + dy;
+}
+
+function endDrag() {
+  draggingNode.value = null;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('mouseup', endDrag);
 }
 
 function layoutTree() {
@@ -220,6 +279,52 @@ function layoutTree() {
   });
 }
 
+
+const scale = ref(1); 
+const minScale = 0.3; 
+const maxScale = 3; 
+const scaleStep = 0.1; 
+
+function handleWheel(e: WheelEvent) {
+  e.preventDefault();
+  
+  const delta = -Math.sign(e.deltaY);
+  
+  let newScale = scale.value + delta * scaleStep;
+  
+  newScale = Math.max(minScale, Math.min(maxScale, newScale));
+  
+  if (newScale === scale.value) return;
+  
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  
+  offsetX.value = mouseX - (mouseX - offsetX.value) * (newScale / scale.value);
+  offsetY.value = mouseY - (mouseY - offsetY.value) * (newScale / scale.value);
+  
+  scale.value = newScale;
+}
+
+function zoomIn() {
+  scale.value = Math.min(maxScale, scale.value + scaleStep);
+}
+
+function zoomOut() {
+  scale.value = Math.max(minScale, scale.value - scaleStep);
+}
+
+function resetZoom() {
+  scale.value = 1;
+  centerCanvasToRoot();
+}
+
+
+
+
 function animateCenterTo(x: number, y: number) {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -246,17 +351,19 @@ let panStartY = 0
 let panning = false
 
 function startPan(e: MouseEvent) {
-  if ((e.target as HTMLElement).closest('.node')) return
-  panning = true
-  panStartX = e.clientX - offsetX.value
-  panStartY = e.clientY - offsetY.value
-  window.addEventListener('mousemove', onPan)
-  window.addEventListener('mouseup', endPan)
+  if (draggingNode.value || (e.target as HTMLElement).closest('.node')) return;
+  
+  panning = true;
+  panStartX = e.clientX - offsetX.value * scale.value;
+  panStartY = e.clientY - offsetY.value * scale.value;
+  window.addEventListener('mousemove', onPan);
+  window.addEventListener('mouseup', endPan);
 }
+
 function onPan(e: MouseEvent) {
-  if (!panning) return
-  offsetX.value = e.clientX - panStartX
-  offsetY.value = e.clientY - panStartY
+  if (!panning) return;
+  offsetX.value = (e.clientX - panStartX) / scale.value;
+  offsetY.value = (e.clientY - panStartY) / scale.value;
 }
 function getRectEdgeIntersection(
   cx: number,
@@ -728,4 +835,49 @@ function connectNode(targetNode: GraphNode) {
 .text-container:hover .text-full {
   display: block;
 }
+
+.node.dragging {
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  opacity: 0.9;
+}
+
+.canvas-content {
+  transition: transform 0.1s ease;
+}
+
+.zoom-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.zoom-controls button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #c4b5fd;
+  background: #ddd6fe;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.zoom-controls button:hover {
+  background: #c4b5fd;
+}
+
+.scale-display {
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
+  line-height: 28px;
+  font-size: 0.9em;
+}
+
 </style>

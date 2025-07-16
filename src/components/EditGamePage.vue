@@ -11,6 +11,7 @@ import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/EditCharacterModal.vue'
 import { submitDialogData } from '../../api/api';
+import { scene } from '@/types.js'
 
 export default {
   name: 'EditGamePage',
@@ -78,10 +79,13 @@ export default {
     saveScript() {
       if (this.$refs.child.validate()) {
         let child = this.$refs.child
+        let gameId = this.createScriptGameId;
+        let sceneId = this.createScriptSceneId;
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
+        let id = Date.now().toString()
         scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.push({
-          id: Date.now(),
+          id: id,
           name: child.name,
           answers_from_m: child.answers_from_m,
           answers_to_m: child.answers_to_m,
@@ -141,7 +145,7 @@ export default {
             }
           ]
         };
-        submitDialogData(dialogData).then(response => console.log('Успех:', response)).catch(error => console.error('Ошибка:', error));
+        submitDialogData(dialogData).then(response => scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.find(s => s.id == id).result = response).catch(error => console.error('Ошибка:', error));
       }
     },
     saveScene() {
