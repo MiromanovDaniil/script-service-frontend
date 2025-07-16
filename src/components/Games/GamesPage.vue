@@ -60,14 +60,19 @@
       v-if="showCreateModal"
       @close="showCreateModal = false"
       @create="addGame"
+      ref="createGame"
     />
 
-    <EditCharacterModal
-      :visible="isCharsModalVisible"
+    <CharactersModal
+      :visible="isCharsModalVisible && !isCharEditModalOpened"
       :characters="selectedGameCharacters"
       @close="isCharsModalVisible = false"
       @save="onSaveCharacters"
+      @add="isCharEditModalOpened = true"
+      ref="charsModal"
     />
+
+    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal ref="createChar"/></ModalWindow>
   </div>
 </template>
 
@@ -86,10 +91,12 @@
 import GameItem from '@/components/Games/GameItem.vue'
 import CreateGameModal from '@/components/Games/CreateGameModal.vue'
 import { state } from '@/store'
-import EditCharacterModal from '../CharacterViewModal.vue'
+import CharactersModal from '../CharacterViewModal.vue'
+import ModalWindow from '../ModalWindow.vue'
+import CreateCharacterModal from '../CreateCharacterModal.vue'
 
 export default {
-  components: { GameItem, CreateGameModal, EditCharacterModal },
+  components: { GameItem, CreateGameModal, CharactersModal, ModalWindow, CreateCharacterModal },
   data() {
     return {
       showCreateModal: false,
@@ -98,7 +105,8 @@ export default {
       darkTheme: false,
       language: 'ru',
       selectedGame: null,             
-      selectedGameCharacters: []        
+      selectedGameCharacters: [],
+      isCharEditModalOpened: false
     }
   },
   computed: {
@@ -110,10 +118,16 @@ export default {
     openCreateModal() {
       this.showCreateModal = true
     },
-    addGame(newGame) {
+    addGame() {
+      let child = this.$refs.createGame;
+      if(child.validate())
       state.games.push({
         id: Date.now().toString(),
-        name: newGame.name,
+        name: child.game.name,
+        description: child.game.description,
+        genre: child.game.genre,
+        techLevel: child.game.techLevel,
+        tonality: child.game.tonality,
         scenes: [],
         characters: [],
       })
@@ -133,6 +147,21 @@ export default {
     },
     closeSettings() {
       this.showSettings = false
+    },
+    save() {
+      let ch = this.$refs.createChar;
+      if(this.$refs.createChar.validate()) {
+        this.$refs.charsModal.localChars.push({
+          "id": Date.now().toString(),
+          "name": ch.name,
+          "profession": ch.job,
+          "talk_style": ch.speechStyle,
+          "traits": ch.mood,
+          "look": ch.appearance,
+          "extra": ch.description
+        });
+        this.isCharEditModalOpened = false;
+      }
     }
   }
 }
