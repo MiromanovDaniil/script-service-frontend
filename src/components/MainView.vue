@@ -64,15 +64,16 @@
   <!-- Маркеры для текста -->
   <g v-for="(l, i) in lines" :key="'marker-' + i">
     <circle
-      :cx="l.markerX"
-      :cy="l.markerY"
-      r="5"
-      fill="#a78bfa"
-      opacity="0.5"
-      @mouseenter="hoveredLineIndex = i"
-      @mouseleave="hoveredLineIndex = null"
-      style="cursor: pointer;"
-    />
+  :cx="l.markerX"
+  :cy="l.markerY"
+  r="5"
+  fill="#a78bfa"
+  opacity="0.5"
+  @mouseenter="hoveredLineIndex = i"
+  @mouseleave="hoveredLineIndex = null"
+  @click.stop="editEdge(findNodeByPosition(l.x1, l.y1), findEdgeIndex(l))"
+  style="cursor: pointer;"
+/>
     
     
 <g v-if="hoveredLineIndex === i" class="tooltip-group">
@@ -122,15 +123,56 @@
                 <div class="text-full">{{ node.line }}</div>
               </div>
               <div class="actions">
-                <button @click="() => addChild(node)">+</button>
-                <button @click="() => deleteNode(node)">🗑</button>
-                <button @click="() => connectNode(node)">🔗</button>
+        
+<button @click="() => addChild(node)" class="icon-button">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+  </svg>
+</button>
+<button @click="() => editNode(node)" class="icon-button">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+  </svg>
+</button>
+<button @click="() => deleteNode(node)" class="icon-button">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+  </svg>
+</button>
+<button @click="() => connectNode(node)" class="icon-button">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+  </svg>
+</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+     <RegenerateModal
+      :showModal="showEditModal"
+      :initialMainPrompt="editingNode?.line || ''"
+      :initialAdditionalPrompt="editingNode?.info || ''"
+      @close="closeEditModal"
+      @submit="handleNodeSubmit"
+      @regenerate="handleNodeRegenerate"
+    />
+
+    <dialog 
+  v-if="showEdgeModal"
+  class="edge-dialog" 
+  open
+  @click.self="closeEdgeModal"
+>
+  <h3 class="dialog-title">Редактировать</h3>
+  <textarea v-model="edgeText" class="edge-textarea"></textarea>
+  <div class="dialog-actions">
+    <button @click="closeEdgeModal">Отмена</button>
+    <button @click="saveEdgeText">Сохранить</button>
+  </div>
+</dialog>
   </div>
 </template>
 
@@ -139,11 +181,15 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
+import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
+
+const editingNode = ref<GraphNode | null>(null);
+const showEditModal = ref(false);
 
 interface GraphEdge {
   id: string | number;
@@ -417,7 +463,31 @@ function resetZoom() {
 }
 
 
+function editNode(node: GraphNode) {
+  editingNode.value = node;
+  showEditModal.value = true;
+  
+}
 
+function handleNodeSubmit({ main, additional }: { main: string; additional: string }) {
+  if (editingNode.value) {
+    editingNode.value.line = main;
+    editingNode.value.info = additional;
+  }
+  closeEditModal();
+}
+
+function handleNodeRegenerate() {
+  if (editingNode.value) {
+    // РЕГЕНЕРАЦИЯ
+    editingNode.value.line = `[Регенерировано] ${editingNode.value.line}`;
+  }
+}
+
+function closeEditModal() {
+  showEditModal.value = false;
+  editingNode.value = null;
+}
 
 function animateCenterTo(x: number, y: number) {
   const canvas = canvasRef.value
@@ -728,11 +798,11 @@ function addChild(parentNode: GraphNode) {
   scenario.value.data.push(newNode);
   parentNode.to.push({
     id: newId,
-    line: "Новая фраза"
+    line: 'Новая фраза'
   });
 
   layoutTree();
-  nextTick(() => centerCanvasToNode(newNode));
+  //nextTick(() => centerCanvasToNode(newNode));
 }
 
 function deleteNode(nodeToDelete: GraphNode) {
@@ -753,7 +823,7 @@ function deleteNode(nodeToDelete: GraphNode) {
 
   // 4. Перестраиваем дерево и центрируем
   layoutTree();
-  centerCanvasToRoot();
+  //centerCanvasToRoot();
 }
 
 function back() {
@@ -795,9 +865,54 @@ function connectNode(targetNode: GraphNode) {
     layoutTree();
   }
 }
+
+const editingEdge = ref<{node: GraphNode, index: number} | null>(null);
+const showEdgeModal = ref(false);
+const edgeText = ref('');
+
+function editEdge(node: GraphNode, edgeIndex: number) {
+  editingEdge.value = { node, index: edgeIndex };
+  edgeText.value = node.to[edgeIndex].line;
+  showEdgeModal.value = true;
+}
+
+function saveEdgeText() {
+  if (editingEdge.value) {
+    editingEdge.value.node.to[editingEdge.value.index].line = edgeText.value;
+    closeEdgeModal();
+  }
+}
+
+function closeEdgeModal() {
+  showEdgeModal.value = false;
+  editingEdge.value = null;
+  edgeText.value = '';
+}
+
+function findNodeByPosition(x: number, y: number): GraphNode | null {
+  return flatNodes.value.find(node => {
+    const nodeX = node.meta?.x || 0;
+    const nodeY = node.meta?.y || 0;
+    return x >= nodeX && x <= nodeX + NODE_WIDTH && 
+           y >= nodeY && y <= nodeY + NODE_HEIGHT;
+  }) || null;
+}
+
+function findEdgeIndex(line: Line): number {
+  const node = findNodeByPosition(line.x1, line.y1);
+  if (!node) return -1;
+  
+  const targetNode = findNodeByPosition(line.x2, line.y2);
+  if (!targetNode) return -1;
+  
+  return node.to.findIndex(edge => edge.id === targetNode.id);
+}
+
 </script>
 
 <style scoped>
+
+
 .scenario-view {
   width: 100%;
   height: 100%;
@@ -1079,5 +1194,81 @@ function connectNode(targetNode: GraphNode) {
   font-size: 14px;
   font-weight: 500;
 }
+.edge-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #c4b5fd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+}
 
+.dialog-title {
+  color: #3b0764;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.edge-textarea {
+  width: 100%;
+  min-height: 100px;
+  margin: 10px 0;
+  padding: 8px;
+  border: 1px solid #c4b5fd;
+  border-radius: 4px;
+  display: block;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dialog-actions button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dialog-actions button:first-child {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
+.dialog-actions button:last-child {
+  background: #8b5cf6;
+  color: white;
+  border: none;
+}
+
+.icon-button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0 1px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.icon-button:hover {
+  background-color: #f3e8ff;
+}
+
+.icon-button:hover .icon {
+  fill: #6b21a8;
+}
 </style>

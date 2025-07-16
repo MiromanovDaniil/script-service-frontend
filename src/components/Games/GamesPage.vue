@@ -145,6 +145,7 @@ export default {
   display: grid;
   grid-template-rows: auto 1fr;
   background: linear-gradient(120deg, #e6d5ff 0%, #fff7ff 100%);
+  overflow: hidden;
 }
 
 .dashboard-header {
@@ -210,6 +211,11 @@ export default {
   gap: 34px 28px;
   align-items: flex-start;
   box-sizing: border-box;
+
+  overflow-y: auto; /* Добавлена вертикальная прокрутка */
+  max-height: calc(100vh - 120px); /* Ограничение высоты для появления скролла */
+  scrollbar-width: thin; /* Для Firefox */
+  scrollbar-color: #c4a8f4 #f0e5ff; /* Для Firefox */
 }
 
 /* Settings panel styles */
@@ -315,4 +321,19 @@ export default {
   font-weight: 600;
   text-align: center;
 }
+
+.games-list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.games-list::-webkit-scrollbar-track {
+  background: #f0e5ff;
+  border-radius: 10px;
+}
+.games-list::-webkit-scrollbar-thumb {
+  background-color: #c4a8f4;
+  border-radius: 10px;
+  border: 2px solid #f0e5ff;
+}
+
 </style>
