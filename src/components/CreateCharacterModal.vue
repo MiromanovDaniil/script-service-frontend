@@ -5,16 +5,19 @@
             <div class="column">
               <label>Имя</label>
               <input type="text" v-model="name" class="input" />
+        <span class="error-label" v-if="this.errors.name">Это поле обязательно для заполнения</span>
             </div>
             <div class="column">
               <label>Профессия</label>
               <input type="text" v-model="job" class="input" />
+        <span class="error-label" v-if="this.errors.job">Это поле обязательно для заполнения</span>
             </div>
           </div>
 
           <div>
             <label>Характеристика</label>
             <textarea v-model="description" class="textarea" rows="5"></textarea>
+        <span class="error-label" v-if="this.errors.description">Это поле обязательно для заполнения</span>
           </div>
         </div>
 
@@ -26,21 +29,25 @@
               <option value="npc">NPC</option>
               <option value="main">Главный персонаж</option>
             </select>
+        <span class="error-label" v-if="this.errors.type">Это поле обязательно для заполнения</span>
           </div>
 
           <div>
             <label>Характер</label>
             <input type="text" v-model="mood" class="input" />
+        <span class="error-label" v-if="this.errors.mood">Это поле обязательно для заполнения</span>
           </div>
 
           <div>
             <label>Стиль речи</label>
             <textarea v-model="speechStyle" class="textarea" rows="3"></textarea>
+        <span class="error-label" v-if="errors.speechStyle">Это поле обязательно для заполнения</span>
           </div>
 
           <div>
             <label>Внешний вид</label>
             <textarea v-model="appearance" class="textarea" rows="3"></textarea>
+        <span class="error-label" v-if="this.errors.appearance">Это поле обязательно для заполнения</span>
           </div>
           
         </div>
@@ -62,26 +69,41 @@ export default {
       mood: '',
       speechStyle: '',
       appearance: '',
-      extra: '',
-      fieldsToValidate: ['name', 'job', 'description', 'type', 'mood', 'speechStyle', 'appearance']
+      fieldsToValidate: ['name', 'job', 'description', 'type', 'mood', 'speechStyle', 'appearance'],
+      errors: {}
     };
   },
   methods: {
-    submitForm() {
-      const requiredFields = ['name', 'job', 'description', 'type', 'mood', 'speechStyle', 'appearance'];
-      const emptyFields = requiredFields.filter(field => !this.form[field]?.trim());
-
-      if (emptyFields.length > 0) {
-        alert("Пожалуйста, заполните все обязательные поля.");
-        return;
-      }
-
-      this.$emit('submit-character', this.form);
-    },
     handleClose() {
       this.$emit('closeModal', false);
-    }
+    },
+    validate() {
+      this.resetErrors()
+          const err = [];
+        for (const field of this.fieldsToValidate) {
+          const value = this[field]
 
+         if (typeof value === 'string') {
+            if (!value.trim()) {
+              this.errors[field] = true
+              err.push(1);
+            }
+          } else if (
+            value === null ||
+            value === undefined ||
+            value === 0
+          ) {
+            this.errors[field] = true
+            err.push(1);
+          }
+        return !err.length
+      }
+    },
+    resetErrors() {
+      for (const field in this.errors) {
+        this.errors[field] = false
+      }
+    },
   }
 };
 </script>

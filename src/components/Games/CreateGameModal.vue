@@ -32,10 +32,12 @@
                 <option>Драма</option>
                 <option>Комедия</option>
                 <option>Ужасы</option>
+                <option>Стратегия</option>
+                
               </select>
             </div>
             <div class="field-group">
-              <label class="field-label">Уровень технологий</label>
+              <label class="field-label">Исторический период</label>
               <select v-model="game.techLevel" class="input">
                 <option disabled value="">Выберите уровень</option>
                 <option>Каменный век</option>
@@ -44,25 +46,18 @@
                 <option>Индустриальный</option>
                 <option>Современность</option>
                 <option>Будущее</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Система магии</label>
-              <select v-model="game.magicSystem" class="input">
-                <option>Отсутствует</option>
-                <option>Магия стихий</option>
-                <option>Духи/божества</option>
-                <option>Артефакты</option>
-                <option>Своя система</option>
+                <option>Другое</option>
               </select>
             </div>
             <div class="field-group">
               <label class="field-label">Тональность</label>
               <select v-model="game.tonality" class="input">
+                <option>Нейтральная</option>
                 <option>Героическая</option>
                 <option>Трагическая</option>
                 <option>Комическая</option>
-                <option>Сказочная</option>
+                <option>Сказочная</option>                    
+          
               </select>
             </div>
           </div>
@@ -86,14 +81,56 @@ export default {
       game: {
         name: '',
         description: '',
-        genre: 'Приключения',
+        genre: '',
         techLevel: '',
-        magicSystem: 'Отсутствует',
-        tonality: 'Героическая'
-      }
+        tonality: 'Нейтральная'
+
+      
+      },
+      fieldsToValidate: ['name', 'description', 'genre', 'techLevel'],
+      errors: {}
     }
   },
   methods: {
+    validate() {
+      this.resetErrors()
+        const errors = []
+
+        const fieldLabels = {
+          name: 'Название',
+          answers_count: 'Количество ответов',
+          branches_count: 'Количество сюжетных веток',
+          characters: 'Персонажи',
+          description: 'Краткое содержание',
+        }
+
+        for (const field of this.fieldsToValidate) {
+          const value = this.game[field]
+
+          if (typeof value === 'object') {
+            if (Object.keys(value).length === 0) {
+              this.errors[field] = true
+            }
+          } else if (typeof value === 'string') {
+            if (!value.trim()) {
+              this.errors[field] = true
+            }
+          } else if (
+            value === null ||
+            value === undefined ||
+            value === 0
+          ) {
+            this.errors[field] = true
+          }
+
+        return !errors.length
+      }
+    },
+    resetErrors() {
+      for (const field in this.errors) {
+        this.errors[field] = false
+      }
+    },
     close() {
       this.$emit('close')
     },

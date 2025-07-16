@@ -47,12 +47,14 @@ export default{
     position: relative;
     overflow-y: hidden;
     height: fit-content;
+   z-index: 100;
   }
  .modal-window-background {
    position: absolute;
    width: 110%;
    height: 110%;
    background-color: rgba(0, 0, 0, 0.75);
+   z-index: 100;
  }
  .modal-dialog-header {
    justify-self: center;
@@ -74,4 +76,32 @@ export default{
  .modal-dialog-footer>.btn {
    float: right;
  }
+
+ .save-btn {
+  background: linear-gradient(90deg,#c08cff 20%, #cde0ff 100%);
+  color: #601f7e;
+  border: none;
+  border-radius: 7px;
+  font-size: 21px;
+  padding: 10px 36px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 10px #e5d4ff33;
+  transition: background 0.2s, transform 0.1s;
+}
+.save-btn:hover {
+  background: #e5e1ff;
+  transform: scale(1.04);
+}
+.modal-dialog-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 30px;
+  padding: 0 4px;
+  transition: transform 0.1s;
+}
+.modal-dialog-close:hover {
+  transform: scale(1.18) rotate(7deg);
+}
 </style>
