@@ -28,55 +28,78 @@
           transformOrigin: '0 0'
         }">
         <svg
-          class="lines"
-          xmlns="http://www.w3.org/2000/svg"
-          :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
-          :width="svgWidth"
-          :height="svgHeight"
-          style="overflow: visible;"
-        >
-          <defs>
-            <marker
-              id="arrow"
-              viewBox="0 0 10 10"
-              refX="8"
-              refY="5"
-              markerWidth="6"
-              markerHeight="6"
-              orient="auto"
-            >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa" />
-            </marker>
-          </defs>
+        class="lines"
+        xmlns="http://www.w3.org/2000/svg"
+        :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
+        :width="svgWidth"
+        :height="svgHeight"
+        style="overflow: visible;"
+      >
+  <defs>
+    <marker
+      id="arrow"
+      viewBox="0 0 10 10"
+      refX="8"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto"
+    >
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa" />
+    </marker>
+  </defs>
 
-
-
-          <line
-  v-for="(l, i) in lines"
-  :key="'line-' + i"
-  :x1="l.x1"
-  :y1="l.y1"
-  :x2="l.x2"
-  :y2="l.y2"
-  stroke="#a78bfa"
-  stroke-width="2"
-  marker-end="url(#arrow)"
-/>
-<text
-  v-for="(l, i) in lines"
-  :key="'text-' + i"
-  :x="(l.x1 + l.x2) / 2"
-  :y="(l.y1 + l.y2) / 2 - 5"
-  fill="#4b5563"
-  font-size="12"
-  text-anchor="middle"
->
-  {{ l.label.split(' ').slice(0, 5).join(' ') }}
+  <line
+    v-for="(l, i) in lines"
+    :key="'line-' + i"
+    :x1="l.x1"
+    :y1="l.y1"
+    :x2="l.x2"
+    :y2="l.y2"
+    stroke="#a78bfa"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  
+  <!-- Маркеры для текста -->
+  <g v-for="(l, i) in lines" :key="'marker-' + i">
+    <circle
+      :cx="l.markerX"
+      :cy="l.markerY"
+      r="5"
+      fill="#a78bfa"
+      opacity="0.5"
+      @mouseenter="hoveredLineIndex = i"
+      @mouseleave="hoveredLineIndex = null"
+      style="cursor: pointer;"
+    />
+    
+    
+<g v-if="hoveredLineIndex === i" class="tooltip-group">
+  <rect
+    :x="l.markerX - l.tooltipWidth/2"
+    :y="l.markerY - 30"
+    :width="l.tooltipWidth"
+    height="24"
+    rx="4"
+    fill="white"
+    stroke="#c4b5fd"
+    stroke-width="1"
+  />
+  <text
+    :x="l.markerX"
+    :y="l.markerY - 15"
+    fill="#4b5563"
+    font-size="12"
+    text-anchor="middle"
+    style="pointer-events: none;"
+  >
+    {{ l.tooltipText }}
   </text>
+</g>
 
-
-        </svg>
-
+  </g>
+</svg>
         <div class="canvas-inner">
           <div
     v-for="node in flatNodes"
@@ -117,6 +140,7 @@ import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 
+const hoveredLineIndex = ref<number | null>(null);
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
@@ -214,11 +238,49 @@ function endDrag() {
   window.removeEventListener('mouseup', endDrag);
 }
 
+
+function findAvailablePosition(nearX: number, nearY: number): { x: number; y: number } {
+  const gridSize = 80; // Увеличено с 50
+  let attempts = 0;
+  const maxAttempts = 100;
+  
+  for (let radius = 1; radius < 10 && attempts < maxAttempts; radius++) {
+    for (let angle = 0; angle < Math.PI * 2 && attempts < maxAttempts; angle += Math.PI / 4) {
+      attempts++;
+      const x = nearX + Math.round(Math.cos(angle) * radius) * gridSize;
+      const y = nearY + Math.round(Math.sin(angle) * radius) * gridSize;
+      
+      const isOccupied = flatNodes.value.some(node => {
+        const nodeX = node.meta?.x || 0;
+        const nodeY = node.meta?.y || 0;
+        return Math.abs(nodeX - x) < NODE_WIDTH && Math.abs(nodeY - y) < NODE_HEIGHT;
+      });
+      
+      if (!isOccupied) {
+        return { x, y };
+      }
+    }
+  }
+  
+  return { x: nearX + NODE_WIDTH + 80, y: nearY };
+}
+
 function layoutTree() {
-  const hGap = 300;
-  const vGap = 200;
+  const hGap = 400; 
+  const vGap = 250; 
   const visited = new Set<string | number>();
-  const nextMap = new Map<number, number>(); // Для отслеживания позиций на уровнях
+  const nextMap = new Map<number, number>();
+  const occupiedPositions = new Map<string, boolean>();
+
+  function isPositionOccupied(x: number, y: number): boolean {
+    const key = `${Math.round(x/10)}_${Math.round(y/10)}`;
+    return occupiedPositions.has(key);
+  }
+
+  function markPositionOccupied(x: number, y: number) {
+    const key = `${Math.round(x/10)}_${Math.round(y/10)}`;
+    occupiedPositions.set(key, true);
+  }
 
   function walk(node: GraphNode, depth: number) {
     if (!node || visited.has(node.id)) return;
@@ -227,25 +289,31 @@ function layoutTree() {
     if (!node.meta) node.meta = {};
     if (!node.to) node.to = [];
     
-    // Инициализация счетчика для уровня
     if (!nextMap.has(depth)) nextMap.set(depth, 0);
     const next = nextMap.get(depth)!;
     
-    // Обработка детей
     const children = node.to
       .map(edge => findNodeById(edge.id))
       .filter((c): c is GraphNode => !!c);
     
     if (children.length === 0) {
-      node.meta.x = next * hGap;
-      node.meta.y = depth * vGap;
+      let x = next * hGap;
+      let y = depth * vGap;
+      let attempts = 0;
+      
+      while (isPositionOccupied(x, y) && attempts < 10) {
+        x += 50;
+        y += 50;
+        attempts++;
+      }
+      
+      node.meta.x = x;
+      node.meta.y = y;
+      markPositionOccupied(x, y);
       nextMap.set(depth, next + 1);
     } else {
-      // Сохраняем начальную позицию для детей
-      const startDepth = depth + 1;
-      children.forEach(child => walk(child, startDepth));
+      children.forEach(child => walk(child, depth + 1));
       
-      // Позиционируем родителя по центру детей
       const childPositions = children
         .filter(c => c.meta?.x !== undefined)
         .map(c => c.meta!.x!);
@@ -254,24 +322,31 @@ function layoutTree() {
         const minX = Math.min(...childPositions);
         const maxX = Math.max(...childPositions);
         node.meta.x = (minX + maxX) / 2;
+        node.meta.y = depth * vGap;
+        
+        if (isPositionOccupied(node.meta.x, node.meta.y)) {
+          node.meta.x += 100;
+        }
+        
+        markPositionOccupied(node.meta.x, node.meta.y);
       } else {
         node.meta.x = next * hGap;
+        node.meta.y = depth * vGap;
+        markPositionOccupied(node.meta.x, node.meta.y);
       }
       
-      node.meta.y = depth * vGap;
       nextMap.set(depth, next + 1);
     }
   }
 
-  // Сбрасываем счетчики и обходим от корня
   visited.clear();
   nextMap.clear();
+  occupiedPositions.clear();
   
   if (currentRoot.value) {
     walk(currentRoot.value, 0);
   }
   
-  // Обрабатываем несвязанные узлы
   scenario.value.data.forEach(node => {
     if (!visited.has(node.id)) {
       walk(node, 0);
@@ -279,6 +354,25 @@ function layoutTree() {
   });
 }
 
+
+function truncateText(text: string, maxWords: number): { text: string; width: number } {
+  const words = text.split(' ');
+  let resultText = text;
+  if (words.length > maxWords) {
+    resultText = words.slice(0, maxWords).join(' ') + '...';
+  }
+  const width = calculateTextWidth(resultText);
+  return { text: resultText, width };
+}
+
+function calculateTextWidth(text: string, fontSize: number = 12): number {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (!context) return 120; 
+  
+  context.font = `${fontSize}px Arial`;
+  return context.measureText(text).width + 20;
+}
 
 const scale = ref(1); 
 const minScale = 0.3; 
@@ -528,11 +622,16 @@ interface Line {
   x2: number
   y2: number
   label: string
+  markerX: number
+  markerY: number
+  tooltipWidth: number
+  tooltipText: string
 }
 
 const lines = computed(() => {
   const arr: Line[] = [];
   const visited = new Set<string | number>();
+  
 
   function walk(node: GraphNode) {
     if (!node || visited.has(node.id)) return;
@@ -564,12 +663,19 @@ const lines = computed(() => {
           startCenterY
         );
 
+        const markerX = start.x + (end.x - start.x) * 0.7;
+        const markerY = start.y + (end.y - start.y) * 0.7;
+const { text: truncatedText, width } = truncateText(edge.line || '', 12);
         arr.push({
           x1: start.x,
-          y1: start.y,
-          x2: end.x,
-          y2: end.y,
-          label: edge.line || ''
+    y1: start.y,
+    x2: end.x,
+    y2: end.y,
+    label: edge.line || '',
+    markerX,
+    markerY,
+    tooltipWidth: width,
+    tooltipText: truncatedText
         });
 
         walk(child);
@@ -600,25 +706,31 @@ const svgHeight = computed(() => {
 
 function addChild(parentNode: GraphNode) {
   const newId = Date.now(); // Генерируем числовой ID
-  
+
+  const parentX = parentNode.meta?.x || 0;
+  const parentY = parentNode.meta?.y || 0;
+
+  const position = findAvailablePosition(parentX + NODE_WIDTH, parentY);
+
   const newNode: GraphNode = {
     id: newId,
     line: 'Новый узел',
     info: '',
-    to: [], // Пустой массив связей для нового узла
-    meta: {}
-  };
+    to: [],
+    meta: {
+      x: position.x,
+      y: position.y
+    }
+  }
 
-  // Добавляем новый узел в массив данных
+
+
   scenario.value.data.push(newNode);
-  
-  // Добавляем связь от родительского узла к новому
   parentNode.to.push({
     id: newId,
-    line: newNode.line
+    line: "Новая фраза"
   });
 
-  // Перестраиваем дерево и центрируем на новый узел
   layoutTree();
   nextTick(() => centerCanvasToNode(newNode));
 }
@@ -662,20 +774,19 @@ const connectingFrom = ref<GraphNode | null>(null)
 
 function connectNode(targetNode: GraphNode) {
   if (!connectingFrom.value) {
-    // Если начало связи не выбрано - выбираем текущий узел
+  
     connectingFrom.value = targetNode;
   } else {
-    // Если начало связи уже выбрано - создаём связь
+    
     const sourceNode = connectingFrom.value;
     
-    // Проверяем, что связь не ведёт к тому же узлу и не дублируется
     const isSameNode = sourceNode.id === targetNode.id;
     const alreadyConnected = sourceNode.to.some(edge => edge.id == targetNode.id);
     
     if (!isSameNode && !alreadyConnected) {
       sourceNode.to.push({
         id: targetNode.id,
-        line: targetNode.line
+        line: "Новая фраза"
       });
     }
     
@@ -757,6 +868,7 @@ function connectNode(targetNode: GraphNode) {
   top: 0;
   left: 0;
   pointer-events: none;
+  pointer-events: bounding-box;
   overflow: visible;
 }
 
@@ -878,6 +990,94 @@ function connectNode(targetNode: GraphNode) {
   text-align: center;
   line-height: 28px;
   font-size: 0.9em;
+}
+
+.lines circle {
+  transition: all 0.2s ease;
+  pointer-events: all;
+  r: 10;
+   fill: #8b5cf6;
+  opacity: 0.3;
+}
+
+.lines circle:hover {
+  opacity: 1;
+  r: 10;
+}
+
+.lines text {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  font-size: 12px;
+  color: #4b5563;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tooltip-group rect {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-group text {
+  dominant-baseline: middle;
+  font-family: Arial, sans-serif;
+}
+
+.tooltip-group rect {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip-group text {
+  dominant-baseline: middle;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+  user-select: none;
+}
+
+.zoom-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid #c4b5fd;
+}
+
+.zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #c4b5fd;
+  background: #ddd6fe;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.zoom-controls button:hover {
+  background: #c4b5fd;
+}
+
+.scale-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  height: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 </style>

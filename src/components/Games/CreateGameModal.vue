@@ -32,10 +32,12 @@
                 <option>Драма</option>
                 <option>Комедия</option>
                 <option>Ужасы</option>
+                <option>Стратегия</option>
+                
               </select>
             </div>
             <div class="field-group">
-              <label class="field-label">Уровень технологий</label>
+              <label class="field-label">Исторический период</label>
               <select v-model="game.techLevel" class="input">
                 <option disabled value="">Выберите уровень</option>
                 <option>Каменный век</option>
@@ -44,25 +46,18 @@
                 <option>Индустриальный</option>
                 <option>Современность</option>
                 <option>Будущее</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Система магии</label>
-              <select v-model="game.magicSystem" class="input">
-                <option>Отсутствует</option>
-                <option>Магия стихий</option>
-                <option>Духи/божества</option>
-                <option>Артефакты</option>
-                <option>Своя система</option>
+                <option>Другое</option>
               </select>
             </div>
             <div class="field-group">
               <label class="field-label">Тональность</label>
               <select v-model="game.tonality" class="input">
+                <option>Нейтральная</option>
                 <option>Героическая</option>
                 <option>Трагическая</option>
                 <option>Комическая</option>
-                <option>Сказочная</option>
+                <option>Сказочная</option>                    
+          
               </select>
             </div>
           </div>
@@ -88,8 +83,7 @@ export default {
         description: '',
         genre: 'Приключения',
         techLevel: '',
-        magicSystem: 'Отсутствует',
-        tonality: 'Героическая'
+        tonality: 'Нейтральная'
       }
     }
   },
