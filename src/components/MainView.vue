@@ -3,10 +3,6 @@
   >
     <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
 
-    <button class="btn" @click="download">
-      Скачать
-    </button>
-
     <textarea
       v-model="scenario.description"
       class="scenario-description"
@@ -116,35 +112,6 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
-
-function downloadF(filename, text) {
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  element.setAttribute('download', filename);
-
-  element.style.display = 'none';
-  document.body.appendChild(element);
-
-  element.click();
-
-  document.body.removeChild(element);
-}
-function download(){
-  let name = 'scene.json';
-  let game = state.games.find(g => g.id == state.selectedGameId);
-  let scripts = game.scenes.find(s => s.id == state.selectedSceneId).scripts
-  let res = [];
-  scripts.forEach(element => {
-    if (Object.keys(element.result).length > 0){
-      let r = {}
-      r["data"] = element.result.data;
-      r["npc_name"] = game.characters.find(c => c.id == element.npc).name;
-      r["hero_name"] = game.characters.find(c => c.id == element.main_character).name;
-      res.push(r);
-    }
-  });
-  downloadF(name, JSON.stringify(res));
-}
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
