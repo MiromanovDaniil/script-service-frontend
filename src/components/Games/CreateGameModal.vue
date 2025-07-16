@@ -84,6 +84,8 @@ export default {
         genre: '',
         techLevel: '',
         tonality: 'Нейтральная'
+
+      
       },
       fieldsToValidate: ['name', 'description', 'genre', 'techLevel'],
       errors: {}
