@@ -2,6 +2,11 @@
   <div class="scenario-view"
   >
     <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
+
+    <button class="btn" @click="download">
+      Скачать
+    </button>
+
     <textarea
       v-model="scenario.description"
       class="scenario-description"
@@ -12,15 +17,12 @@
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
 
-
     <div class="zoom-controls">
       <button @click="zoomIn">+</button>
       <button @click="resetZoom">100%</button>
       <button @click="zoomOut">-</button>
       <span class="scale-display">{{ Math.round(scale * 100) }}%</span>
     </div>
-
-    
 
     <div class="canvas" ref="canvasRef" @mousedown="startPan" @wheel="handleWheel">
       <div class="canvas-content" :style="{ 
@@ -73,8 +75,6 @@
 >
   {{ l.label.split(' ').slice(0, 5).join(' ') }}
   </text>
-
-
         </svg>
 
         <div class="canvas-inner">
@@ -117,6 +117,34 @@ import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 
+function downloadF(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+function download(){
+  let name = 'scene.json';
+  let game = state.games.find(g => g.id == state.selectedGameId);
+  let scripts = game.scenes.find(s => s.id == state.selectedSceneId).scripts
+  let res = [];
+  scripts.forEach(element => {
+    if (Object.keys(element.result).length > 0){
+      let r = {}
+      r["data"] = element.result.data;
+      r["npc_name"] = game.characters.find(c => c.id == element.npc).name;
+      r["hero_name"] = game.characters.find(c => c.id == element.main_character).name;
+      res.push(r);
+    }
+  });
+  downloadF(name, JSON.stringify(res));
+}
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
