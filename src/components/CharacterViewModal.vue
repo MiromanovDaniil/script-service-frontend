@@ -34,13 +34,11 @@
           :key="char.id"
           class="character-item"
         >
-          <span class="input">{{ char.name }}</span>
-          <!--<button
-            @click="addCharacter"
-            title="Изменить"
-          >
-            Изменить
-          </button>-->
+          <input
+            v-model="char.name"
+            type="text"
+            class="input"
+          />
           <button 
             @click="deleteCharacter(char.id)" 
             class="trash-btn"
@@ -92,7 +90,8 @@ export default {
       this.$emit("close");
     },
     addCharacter() {
-      this.$emit('add')
+      const newId = Date.now();
+      this.localChars.push({ id: newId, name: "Новый персонаж" });
     },
     deleteCharacter(id) {
       this.localChars = this.localChars.filter(c => c.id !== id);

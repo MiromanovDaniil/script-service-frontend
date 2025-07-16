@@ -81,57 +81,13 @@ export default {
       game: {
         name: '',
         description: '',
-        genre: '',
+        genre: 'Приключения',
         techLevel: '',
         tonality: 'Нейтральная'
-
       }
-      },
-      fieldsToValidate: ['name', 'description', 'genre', 'techLevel'],
-      errors: {}
-
     }
   },
   methods: {
-    validate() {
-      this.resetErrors()
-        const errors = []
-
-        const fieldLabels = {
-          name: 'Название',
-          answers_count: 'Количество ответов',
-          branches_count: 'Количество сюжетных веток',
-          characters: 'Персонажи',
-          description: 'Краткое содержание',
-        }
-
-        for (const field of this.fieldsToValidate) {
-          const value = this.game[field]
-
-          if (typeof value === 'object') {
-            if (Object.keys(value).length === 0) {
-              this.errors[field] = true
-            }
-          } else if (typeof value === 'string') {
-            if (!value.trim()) {
-              this.errors[field] = true
-            }
-          } else if (
-            value === null ||
-            value === undefined ||
-            value === 0
-          ) {
-            this.errors[field] = true
-          }
-
-        return !errors.length
-      }
-    },
-    resetErrors() {
-      for (const field in this.errors) {
-        this.errors[field] = false
-      }
-    },
     close() {
       this.$emit('close')
     },

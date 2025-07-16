@@ -9,7 +9,7 @@ import '@/types.js'
 import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
-import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
+import CreateCharacterModal from '@/components/EditCharacterModal.vue'
 import { submitDialogData } from '../../api/api';
 import { scene } from '@/types.js'
 
@@ -84,7 +84,7 @@ export default {
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
         let id = Date.now().toString()
-        let dialog = {
+        scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.push({
           id: id,
           name: child.name,
           answers_from_m: child.answers_from_m,
@@ -100,44 +100,50 @@ export default {
           infoData: child.itemData,
           additional: child.additional,
           result: {},
-        };
-        let scene = scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)];
-        scene.scripts.push(dialog)
+        })
         this.setCreateScriptModalState(false)
-
-        let goals = [];
-        if(dialog.infoData.gets){
-          goals.push({
-            'type': 'получение информации',
-            'object': dialog.infoData.name,
-            'condition': dialog.infoData.condition
-          });
-        }
-        if(dialog.itemData.gets){
-          goals.push({
-            'type': 'поолучение предмета',
-            'object': dialog.itemData.name,
-            'condition': dialog.itemData.condition
-          });
-        }
-
         const dialogData = {
-          "npc": game.characters.find(c => c.id == child.npc),
-          "hero": game.characters.find(c => c.id == child.main_character),
-          "world_settings": game.description,
-          "NPC_to_hero_relation": dialog.to_main_character_relations,
-          "hero_to_NPC_relation": dialog.to_npc_relations,
-          "mx_answers_cnt": dialog.answers_to_m,
-          "mn_answers_cnt": dialog.answers_from_m,
-          "mx_depth": dialog.answers_to_n,
-          "mn_depth": dialog.answers_from_m,
-          "scene": scene.description,
-          "genre": game.genre,
-          "epoch": game.techLevel,
-          "tonality": game.tonality,
-          "extra": dialog.additional,
-          "context": dialog.description,
-          "goals": goals
+          "npc": {
+            "name": "Элдрик Теневой Лист",
+            "profession": "мастер-следопыт Гильдии Искателей",
+            "talk_style": "лаконичный, с долей сарказма, часто использует метафоры из мира природы",
+            "traits": "проницательный, терпеливый, слегка циничный, но преданный тем, кого уважает",
+            "look": "высокий эльф с серебристыми шрамами на лице, в плаще из листьев-хамелеонов, с луком из чёрного дерева",
+            "extra": "имеет ручного ворона, который передаёт сообщения, но иногда добавляет от себя саркастичные комментарии"
+          },
+          "hero": {
+            "name": "Каэль Огненный След",
+            "profession": "бывший кузнец, носитель проклятого меча «Плач Феникса»",
+            "talk_style": "грубоватый, но искренний; метафоры связаны с огнём и металлом",
+            "traits": "вспыльчивый, но справедливый; скрывает страх под маской агрессии",
+            "look": "мускулистый человек с трещинами на коже, из которых сочится багровый свет; доспехи покрыты рунами сдерживания",
+            "extra": "меч в его руках иногда шепчет на забытом языке драконов"
+          },
+          "world_settings": "мир Эрнария, где магия просачивается сквозь трещины между реальностями; после Войны Разлома древние артефакты пробуждаются",
+          "NPC_to_hero_relation": "Элдрик видит в Каэле «неотполированный алмаз» и считает, что артефакт может помочь им обоим",
+          "hero_to_NPC_relation": "Каэль не доверяет эльфам после предательства, но уважает навыки Элдрика",
+          "mx_answers_cnt": 5,
+          "mn_answers_cnt": 2,
+          "mx_depth": 3,
+          "mn_depth": 1,
+          "scene": "заброшенный храм Лунной Богини, где артефакт был спрятан; сейчас его стены медленно растворяются в тени",
+          "genre": "тёмное фэнтези с элементами мистики",
+          "epoch": "эпоха Угасания (цивилизация на грани магического апокалипсиса)",
+          "tonality": "мрачная, но с проблесками надежды; акцент на хрупкости человечности в мире, где законы реальности рушатся",
+          "extra": "в храме есть фрески, предсказывающие судьбу героев, но они меняются при лунном свете",
+          "context": "герои встретились в таверне «Последний Вздох», где Элдрик подслушал, как меч Каэля говорил о Лунном Звере",
+          "goals": [
+            {
+              "type": "достижение",
+              "object": "Сердце Лунного Зверя",
+              "condition": "до восхода кровавой луны"
+            },
+            {
+              "type": "избежание",
+              "object": "пробуждение Теневого Покровителя культа",
+              "condition": "если артефакт активируют неправильно"
+            }
+          ]
         };
         submitDialogData(dialogData).then(response => scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.find(s => s.id == id).result = response).catch(error => console.error('Ошибка:', error));
       }
@@ -169,7 +175,7 @@ export default {
       scenes: [],
       game: null,
       answerLoadingModalOpened: false,
-      createCharacterModalOpened: true,
+      createCharacterModalOpened: false,
       
     }
   },

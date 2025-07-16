@@ -2,7 +2,6 @@
   <div class="scenario-view"
   >
     <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
-
     <textarea
       v-model="scenario.description"
       class="scenario-description"
@@ -13,12 +12,15 @@
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
 
+
     <div class="zoom-controls">
       <button @click="zoomIn">+</button>
       <button @click="resetZoom">100%</button>
       <button @click="zoomOut">-</button>
       <span class="scale-display">{{ Math.round(scale * 100) }}%</span>
     </div>
+
+    
 
     <div class="canvas" ref="canvasRef" @mousedown="startPan" @wheel="handleWheel">
       <div class="canvas-content" :style="{ 
@@ -99,8 +101,6 @@
 
   </g>
 </svg>
-        </svg>
-
         <div class="canvas-inner">
           <div
     v-for="node in flatNodes"
@@ -177,13 +177,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { state } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
+
 const route = useRoute()
 const emit = defineEmits(['createScene'])
 
@@ -561,14 +562,14 @@ function endPan() {
   window.removeEventListener('mouseup', endPan)
 }
 
-function reloadGraph() {
-  const game = state.games.find(g => g.id === route.params.id);
-  if (game) {
-    const scene = game.scenes.find(s => s.id === state.selectedSceneId);
-    if (scene) {
-      const script = scene.scripts.find(s => s.id === state.selectedScriptId);
-      if (script) {
-        let loadedData: GraphNode[] = [];
+onMounted(() => {
+    const game = state.games.find(g => g.id === route.params.id);
+    if (game) {
+      const scene = game.scenes.find(s => s.id === state.selectedSceneId);
+      if (scene) {
+        const script = scene.scripts.find(s => s.id === state.selectedScriptId);
+        if (script) {
+    let loadedData: GraphNode[] = [];
     
     if (Array.isArray(script.result?.data)) {
       loadedData = script.result.data.map(node => ({
@@ -609,40 +610,31 @@ function reloadGraph() {
     currentRoot.value = scenario.value.data[0];
     layoutTree();
     nextTick(() => {
-      layoutTree();
-      
-      // Центрируем на весь граф
-      let minX = Infinity, maxX = -Infinity;
-      let minY = Infinity, maxY = -Infinity;
+  layoutTree();
+  
+  // Центрируем на весь граф
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
 
-      flatNodes.value.forEach(node => {
-        const x = node.meta?.x || 0;
-        const y = node.meta?.y || 0;
-        minX = Math.min(minX, x);
-        maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y);
-        maxY = Math.max(maxY, y);
-      });
+  flatNodes.value.forEach(node => {
+    const x = node.meta?.x || 0;
+    const y = node.meta?.y || 0;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  });
 
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      
-      animateCenterTo(centerX, centerY);
-    });
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  
+  animateCenterTo(centerX, centerY);
+});
   }
+      }
     }
   }
-}
-
-onMounted(reloadGraph);
-watch(
-  () => state,
-  (val) => {
-    console.log(123);
-    reloadGraph();
-  },
-  { deep: true }
-)
+);
 
 function createRootNode(): GraphNode {
   return {
