@@ -28,13 +28,13 @@ export default {
 
       document.body.removeChild(element)
     },
-    download() {
-      let name = 'scene.json'
-      let game = state.games.find((g) => g.id == state.selectedGameId)
-      let scripts = game.scenes.find((s) => s.id == state.selectedSceneId).scripts
-      let res = []
-      scripts.forEach((element) => {
-        if (Object.keys(element.result).length > 0) {
+    download(id){
+      let name = 'scene.json';
+      let game = state.games.find(g => g.id == state.selectedGameId);
+      let scripts = game.scenes.find(s => s.id == id).scripts
+      let res = [];
+      scripts.forEach(element => {
+        if (Object.keys(element.result).length > 0){
           let r = {}
           r['data'] = element.result.data
           r['npc_name'] = game.characters.find((c) => c.id == element.npc).name
@@ -72,7 +72,7 @@ export default {
       <span class="addScript" @click.stop="addScript">+</span>
       <button class="scene-btn" @click.stop="editScene" title="Редактировать">✎</button>
       <button class="scene-btn" @click.stop="deleteScene" title="Удалить">×</button>
-      <img src="../../assets/load.png" height="15px" @click.stop="download" />
+      <img src="../../assets/load.png" height="15px" @click.stop="download(scene.id)" />
     </div>
 
     <transition class="transition" name="panel">

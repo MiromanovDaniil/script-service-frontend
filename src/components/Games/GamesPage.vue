@@ -76,18 +76,12 @@
       :characters="selectedGameCharacters"
       @close="isCharsModalVisible = false"
       @save="onSaveCharacters"
-      @add="isCharEditModalOpened = true"
+      @add="addChar"
+      @edit="editCharF"
       ref="charsModal"
     />
 
-    <ModalWindow
-      v-if="isCharEditModalOpened"
-      @closeModal="isCharEditModalOpened = false"
-      :showButtons="true"
-      :header="'Персонаж'"
-      @validate-request="save"
-      ><CreateCharacterModal ref="createChar"
-    /></ModalWindow>
+    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal :edit="editChar" :char="selectedGame.characters.find(c => c.id == editChar)" ref="createChar"/></ModalWindow>
   </div>
 </template>
 
@@ -123,6 +117,7 @@ export default {
       selectedGame: null,
       selectedGameCharacters: [],
       isCharEditModalOpened: false,
+      editChar: ""
     }
   },
   computed: {
@@ -131,6 +126,14 @@ export default {
     },
   },
   methods: {
+    addChar() {
+      this.isCharEditModalOpened = true;
+      this.editChar = "";
+    },
+    editCharF(id) {
+      this.isCharEditModalOpened = true;
+      this.editChar = id;
+    },
     openCreateModal() {
       this.editingGame = null
       this.showCreateModal = true
@@ -183,18 +186,25 @@ export default {
       saveState()
     },
     save() {
-      let ch = this.$refs.createChar
-      if (this.$refs.createChar.validate()) {
-        this.$refs.charsModal.localChars.push({
-          id: Date.now().toString(),
-          name: ch.name,
-          profession: ch.job,
-          talk_style: ch.speechStyle,
-          traits: ch.mood,
-          look: ch.appearance,
-          extra: ch.description,
-        })
-        this.isCharEditModalOpened = false
+      let ch = this.$refs.createChar;
+      if(this.$refs.createChar.validate()) {
+        let res = {
+          "id": Date.now().toString(),
+          "name": ch.name,
+          "profession": ch.job,
+          "talk_style": ch.speechStyle,
+          "type": ch.type,
+          "traits": ch.mood,
+          "look": ch.appearance,
+          "extra": ch.description
+        };
+        if(ch.edit){
+          this.$refs.charsModal.localChars[this.$refs.charsModal.localChars.findIndex(c => c.id == ch.char.id)] = res;
+        }
+        else {
+          this.$refs.charsModal.localChars.push(res);
+        }
+        this.isCharEditModalOpened = false;
       }
     },
   },
