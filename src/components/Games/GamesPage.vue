@@ -173,6 +173,7 @@ export default {
     onSaveCharacters(newChars) {
       this.selectedGame.characters = newChars
       this.isCharsModalVisible = false
+      saveState()
     },
     closeSettings() {
       this.showSettings = false

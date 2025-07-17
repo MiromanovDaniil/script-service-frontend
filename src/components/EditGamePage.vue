@@ -44,6 +44,7 @@ export default {
         characters: [],
       })
       this.games.push(game)
+      saveState()
     },
     createScene(scene) {
       state.games[state.games.findIndex((game) => game.id === state.selectedGameId)].scenes.push({
@@ -52,6 +53,7 @@ export default {
         scripts: scene.scripts,
         characters: scene.characters,
       })
+      saveState()
     },
     setCreateScriptModalState(state) {
       this.createScriptModalOpened = state
@@ -158,6 +160,7 @@ export default {
           )
           .catch((error) => console.error('Ошибка:', error))
       }
+      saveState()
     },
     saveScene() {
       if (this.$refs.sceneChild.validate()) {
