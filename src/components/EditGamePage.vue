@@ -10,7 +10,7 @@ import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
-import { submitDialogData } from '../../api/api'
+import { submitDialogData } from '../api/api'
 import { scene } from '@/types.js'
 
 export default {
