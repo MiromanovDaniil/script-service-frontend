@@ -72,7 +72,7 @@ export default {
       <span class="addScript" @click.stop="addScript">+</span>
       <button class="scene-btn" @click.stop="editScene" title="Редактировать">✎</button>
       <button class="scene-btn" @click.stop="deleteScene" title="Удалить">×</button>
-      <img src="../../assets/load.png" height="15px" @click.stop="download(scene.id)(scene.id)" />
+      <img src="../../assets/load.png" height="15px" @click.stop="download(scene.id)" />
     </div>
 
     <transition class="transition" name="panel">
