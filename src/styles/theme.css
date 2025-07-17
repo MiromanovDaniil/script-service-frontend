@@ -1,0 +1,19 @@
+body.dark-theme {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+body.dark-theme .games-dashboard {
+  background: linear-gradient(120deg, #202020 0%, #353535 100%);
+}
+
+body.dark-theme .settings-panel {
+  background: #2a2a2a;
+  color: #eee;
+}
+
+body.dark-theme .add-game-item {
+  background: #333;
+  border-color: #555;
+  color: #fff;
+}
