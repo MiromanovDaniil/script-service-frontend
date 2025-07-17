@@ -104,11 +104,16 @@ export default {
     </div>
     <div class="create-scene-modal-cell create-scene-modal-characters">
       <h2 class="create-scene-modal-h2">Персонажи</h2>
-      <Scrollview :w="'100%'" :h="'200px'" :class="{ error: this.errors.characters }">
-        <label v-for="char of charactersList" :key="char.id" class="checkbox-item">
-          <input type="checkbox" :value="char.id" v-model="characters" /> {{ char.name }}
-        </label>
-      </Scrollview>
+    <Scrollview :w="'100%'" :h="'200px'" :class="{ error: errors.characters }">
+      <ul class="characters-list">
+        <li v-for="char of charactersList" :key="char.id" class="character-checkbox">
+          <label>
+            <input type="checkbox" :value="char.id" v-model="characters" />
+            <span>{{ char.name }}</span>
+          </label>
+        </li>
+      </ul>
+    </Scrollview>
       <span class="error-label" v-if="this.errors.characters"
         >Это поле обязательно для заполнения</span
       >
@@ -117,6 +122,39 @@ export default {
 </template>
 
 <style scoped>
+.characters-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.character-checkbox {
+  background-color: #f8f9fa;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.character-checkbox:hover {
+  background-color: #eef1f4;
+}
+
+.character-checkbox input[type='checkbox'] {
+  margin-right: 8px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.character-checkbox span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
 .create-scene-modal-container {
   display: grid;
   grid-template-columns: 50% auto;
