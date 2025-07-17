@@ -2,10 +2,10 @@
   <div class="games-dashboard">
     <!-- Top bar -->
     <header class="dashboard-header">
-      <div class="dashboard-user">
-        <img class="user-avatar" src="/assets/logo.png" alt="avatar" />
-        <span class="user-name">username</span>
-      </div>
+      <router-link to="/profile" class="dashboard-user">
+        <img class="user-avatar" :src="state.user.avatar || '/assets/logo.png'" alt="avatar" />
+        <span class="user-name">{{ state.user.firstName || 'username' }}</span>
+      </router-link>
       <div class="dashboard-status">
         Всего игр: <b>{{ state.games.length }}</b>
       </div>
@@ -240,6 +240,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
 }
 .user-avatar {
   width: 36px;
