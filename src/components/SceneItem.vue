@@ -6,8 +6,19 @@ export default {
   data() {
     return {
       isOpen: false,
+      isMenuVisible: {},
+      menuX: 0,
+      menuY: 0,
     }
   },
+  computed: {
+        menuStyles() {
+          return {
+            top: `${this.menuY}px`,
+            left: `${this.menuX}px`,
+          };
+        },
+      },
   components: { ScriptItem },
   methods: {
     toggle() {
@@ -47,16 +58,40 @@ export default {
     editScene() {
       this.$emit('editScene', this.scene)
     },
+    showContextMenu(event, id) {
+      this.menuX = event.clientX;
+      this.menuY = event.clientY;
+      this.isMenuVisible[id.toString()] = true;
+    },
     deleteScene() {
       this.$emit('deleteScene', this.scene)
     },
+  },
+  mounted() {
+    window.addEventListener('click', (event) => {
+      // Hide menu if click is outside of the menu
+      if (!event.target.closest('.custom-context-menu')) {
+        for (let key in this.isMenuVisible) {
+          this.isMenuVisible[key] = false;
+        }
+      }
+    });
   },
 }
 </script>
 
 <template>
   <div class="GameItem">
-    <div class="accordion" @click="toggle">
+     <div class="custom-context-menu" v-if="isMenuVisible[scene.id.toString()]" :style="menuStyles">
+        <button class="scene-btn icon-with-anim" @click.stop="editScene" title="Редактировать"><svg viewBox="0 0 24 24" width="24" height="24" stroke="#a352fa" fill="#00000000" stroke-width="1.5px">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg></button>
+        <button class="scene-btn icon-with-anim" @click.stop="deleteScene" title="Удалить"><svg viewBox="0 0 24 24" width="24" height="24" stroke="#a352fa" fill="#00000000" stroke-width="1.5px">
+      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+    </svg></button>
+    <button class="scene-btn icon-with-anim" @click.stop="download(scene.id)" title="Удалить"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a352fa" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="arcs"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"></path></svg></button>
+    </div>
+    <div class="accordion" @click="toggle" @contextmenu.prevent="showContextMenu($event, scene.id)">
       <span class="accordion-arrow flipped-vert" :class="{ active: isOpen }"
         ><svg
           :class="{ 'flipped-vert': isOpen }"
@@ -69,14 +104,7 @@ export default {
           <path d="M25 10 L40 40" fill="none" stroke="#c3c3c3" stroke-width="4" /></svg
       ></span>
       {{ scene.name }}
-      <button class="scene-btn" @click.stop="addScript" title="Добавить диалог"><svg transform="rotate(45)" width="28" height="28" fill="none"><path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="1.9"/></svg></button>
-      <button class="scene-btn" @click.stop="editScene" title="Редактировать"><svg viewBox="0 0 24 24" width="24" height="24" stroke="#a352fa" fill="#00000000" stroke-width="1.5px">
-    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-  </svg></button>
-      <button class="scene-btn" @click.stop="deleteScene" title="Удалить"><svg viewBox="0 0 24 24" width="24" height="24" stroke="#a352fa" fill="#00000000" stroke-width="1.5px">
-    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-  </svg></button>
-  <button class="scene-btn" @click.stop="download(scene.id)" title="Удалить"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a352fa" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="arcs"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"></path></svg></button>
+      <button class="scene-btn icon-with-anim" @click.stop="addScript" title="Добавить диалог"><svg transform="rotate(45)" width="28" height="28" fill="none"><path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="1.9"/></svg></button>
     </div>
 
     <transition class="transition" name="panel">
@@ -92,6 +120,10 @@ export default {
     </transition>
   </div>
 </template>
+
+<style>
+
+</style>
 
 <style scoped>
 .panel.transition {
@@ -147,4 +179,12 @@ export default {
   font-size: 14px;
   color: #7e22ce;
 }
+.custom-context-menu {
+      position: fixed;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      z-index: 99; /* Ensure it's on top */
+    }
 </style>

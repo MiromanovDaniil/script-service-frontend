@@ -89,5 +89,8 @@ body {
   color: #30015f; 
 }
 
+.icon-with-anim:hover {
+  transform: scale(1.18) rotate(7deg);
+}
 
 </style>
