@@ -1,35 +1,45 @@
-# script-service-frontend
+# Script Service Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+![Logo](assets/logo.png)
 
-## Recommended IDE Setup
+A beautiful Vue 3 application for creating and editing interactive stories.  It lets you organise games, scenes and scripts while communicating with a backend service to generate content.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Features
+- Manage your games with scenes and characters
+- Dark theme preference saved in local storage
+- Built with [Vue 3](https://vuejs.org/) + [Vite](https://vitejs.dev/) for a fast developer experience
+- Localisation support via **vue-i18n**
+- Unit testing configured with **Vitest**
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+## Project Structure
+```
+src/
+├── api            # API helpers
+├── components     # Vue components
+├── router         # Application routes
+├── styles         # Global styles
+├── store.js       # Reactive application state
+└── main.js        # App entry point
 ```
 
-### Compile and Hot-Reload for Development
+## Development
+Install dependencies and start the dev server:
 
-```sh
+```bash
+npm install
 npm run dev
 ```
 
-### Compile and Minify for Production
+### Production build
 
-```sh
+```bash
 npm run build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Run unit tests
 
-```sh
+```bash
 npm run test:unit
 ```
+
+Enjoy building your scripts! :sparkles:
