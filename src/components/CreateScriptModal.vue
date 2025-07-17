@@ -3,10 +3,14 @@ import Scrollview from '@/components/Scrollview.vue'
 import CharacterItem from '@/components/CharacterItem.vue'
 import PlayerGetsSettings from '@/components/PlayerGetsSettings.vue'
 import CharacterSelect from '@/components/CharacterSelect.vue'
+import { state } from '@/store'
 
 export default {
   name: 'CreateScriptModal',
   components: { CharacterSelect, CharacterItem, Scrollview, PlayerGetsSettings },
+  props: {
+    scene: { type: Object, default: null },
+  },
   data() {
     return {
       name: '',
@@ -33,6 +37,13 @@ export default {
         npc: false,
       },
     }
+  },
+  computed: {
+    availableCharacters() {
+      if (!this.scene) return []
+      const game = state.games.find((g) => g.id === state.selectedGameId)
+      return game ? game.characters.filter((c) => this.scene.characters.includes(c.id)) : []
+    },
   },
   methods: {
     validate() {
@@ -68,11 +79,7 @@ export default {
               errors.push(`Поле "${fieldLabels[field]}" обязательно для заполнения`)
               this.errors[field] = true
             }
-          } else if (
-            value === null ||
-            value === undefined ||
-            value === 0
-          ) {
+          } else if (value === null || value === undefined || value === 0) {
             errors.push(`Поле "${fieldLabels[field]}" обязательно для заполнения`)
             this.errors[field] = true
           }
@@ -87,11 +94,11 @@ export default {
       }
     },
     npcEdited() {
-      this.npc = this.$refs.npc.character;
+      this.npc = this.$refs.npc.character
     },
     mainCharacterEdited() {
-      this.main_character = this.$refs.main_char.character;
-    }
+      this.main_character = this.$refs.main_char.character
+    },
   },
 }
 </script>
@@ -164,7 +171,12 @@ export default {
     <div class="create-script-modal-cell create-script-modal-characters">
       <h2 class="create-script-modal-h2">Персонажи</h2>
       <p><b>Главный персонаж</b></p>
-      <CharacterSelect ref="main_char" @edited="mainCharacterEdited" :class="{ error: this.errors.main_character }" />
+      <CharacterSelect
+        ref="main_char"
+        :characters="availableCharacters"
+        @edited="mainCharacterEdited"
+        :class="{ error: this.errors.main_character }"
+      />
       <span class="error-label" v-if="this.errors.main_character"
         >Это поле обязательно для заполнения</span
       >
@@ -182,7 +194,12 @@ export default {
         </select>
       </div>
       <p><b>NPC</b></p>
-      <CharacterSelect ref="npc" @edited="npcEdited" :class="{ error: this.errors.npc }" />
+      <CharacterSelect
+        ref="npc"
+        :characters="availableCharacters"
+        @edited="npcEdited"
+        :class="{ error: this.errors.npc }"
+      />
       <span class="error-label" v-if="this.errors.npc">Это поле обязательно для заполнения</span>
       <div class="create-script-modal-name">
         <span>Отношение к главному персонажу</span>
