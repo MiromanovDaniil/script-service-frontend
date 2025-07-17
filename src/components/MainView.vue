@@ -8,6 +8,8 @@
       placeholder="Краткое описание диалога"
     ></textarea>
 
+    <button class="btn" @click="saveScript">Сохранить</button>
+
     <div class="scenario-actions">
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
@@ -194,6 +196,7 @@ const showEditModal = ref(false);
 interface GraphEdge {
   id: string | number;
   line: string;
+  info: string;
 }
 
 interface GraphNode {
@@ -257,6 +260,7 @@ const nodeStartY = ref(0);
 
 function startDrag(e: MouseEvent, node: GraphNode) {
   e.stopPropagation();
+  if (!node.meta) node.meta = {};
   draggingNode.value = node;
   
   dragStartX.value = e.clientX;
@@ -271,8 +275,8 @@ function startDrag(e: MouseEvent, node: GraphNode) {
 function onDrag(e: MouseEvent) {
   if (!draggingNode.value || !draggingNode.value.meta) return;
   
-  const dx = e.clientX - dragStartX.value;
-  const dy = e.clientY - dragStartY.value;
+  const dx = (e.clientX - dragStartX.value) / scale.value;
+  const dy = (e.clientY - dragStartY.value) / scale.value;
   
   draggingNode.value.meta.x = nodeStartX.value + dx;
   draggingNode.value.meta.y = nodeStartY.value + dy;
@@ -342,6 +346,7 @@ function layoutTree() {
       .map(edge => findNodeById(edge.id))
       .filter((c): c is GraphNode => !!c);
     
+    if (Object.keys(node.meta).length > 0) return;
     if (children.length === 0) {
       let x = next * hGap;
       let y = depth * vGap;
@@ -509,7 +514,7 @@ function centerCanvasToNode(node: GraphNode) {
   }
   animateCenterTo(node.meta.x || 0, node.meta.y || 0)
 }
-
+reloadGraph
 let panStartX = 0
 let panStartY = 0
 let panning = false
@@ -637,14 +642,17 @@ function reloadGraph() {
 
 onMounted(reloadGraph);
 watch(
-  () => state,
+  () => state.selectedScriptId,
   (val) => {
-    console.log(123);
     reloadGraph();
   },
   { deep: true }
-)
+);
 
+function saveScript(){
+  console.log('work');
+  state.games.find(g => g.id == state.selectedGameId).scenes.find(s => s.id == state.selectedSceneId).scripts.find(s => s.id == state.selectedScriptId).result = {'data': scenario.value.data};
+}
 function createRootNode(): GraphNode {
   return {
     id: 'root',
@@ -807,7 +815,8 @@ function addChild(parentNode: GraphNode) {
   scenario.value.data.push(newNode);
   parentNode.to.push({
     id: newId,
-    line: 'Новая фраза'
+    line: 'Новая фраза',
+    info: 'Текст кнопки'
   });
 
   layoutTree();
@@ -865,7 +874,8 @@ function connectNode(targetNode: GraphNode) {
     if (!isSameNode && !alreadyConnected) {
       sourceNode.to.push({
         id: targetNode.id,
-        line: "Новая фраза"
+        line: "Новая фраза",
+        info: 'Текст кнопки'
       });
     }
     
@@ -984,7 +994,7 @@ function findEdgeIndex(line: Line): number {
   position: absolute;
   top: 0;
   left: 0;
-  transition: transform 0.5s ease;
+  will-change: transform; /* Оптимизация анимации */
 }
 
 .lines {
@@ -1003,6 +1013,8 @@ function findEdgeIndex(line: Line): number {
 }
 
 .node {
+  position: absolute;
+  transform: none !important;
   cursor: pointer;
   position: absolute;
   width: 120px;

@@ -4,7 +4,7 @@ import axios from 'axios';
 export const submitDialogData = async (data) => {
   try {
     const response = await axios.post(
-      'http://10.82.83.134:8005/api/generate', // Замените на реальный URL API
+      'http://10.82.246.20:8005/api/generate', // Замените на реальный URL API
       data,
       {
         headers: {

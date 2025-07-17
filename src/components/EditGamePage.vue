@@ -169,7 +169,7 @@ export default {
       scenes: [],
       game: null,
       answerLoadingModalOpened: false,
-      createCharacterModalOpened: true,
+      createCharacterModalOpened: false,
       
     }
   },

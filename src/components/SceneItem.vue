@@ -60,7 +60,7 @@ export default {
     <transition class="transition" name="panel">
       <div v-show="isOpen" class="panel">
         <ScriptItem v-for="script of scene.scripts" :key="script.id" :scene="scene" :script="script"/>
-        <span v-if="scene.scripts.length === 0" class="no-scripts">В игре еще нет сцен</span>
+        <span v-if="scene.scripts.length === 0" class="no-scripts">В сцене еще нет диалогов</span>
       </div>
     </transition>
   </div>
