@@ -1,17 +1,17 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
-      <h1>Вход</h1>
+      <h1>{{ $t('login.title') }}</h1>
       <form @submit.prevent="submit">
         <div class="form-group">
-          <input v-model="username" class="input" placeholder="Имя пользователя" />
+          <input v-model="username" class="input" :placeholder="$t('login.username')" />
         </div>
         <div class="form-group">
-          <input v-model="password" class="input" type="password" placeholder="Пароль" />
+          <input v-model="password" class="input" type="password" :placeholder="$t('login.password')" />
         </div>
-        <button type="submit" class="btn">Войти</button>
+        <button type="submit" class="btn">{{ $t('login.login') }}</button>
         <p class="register-link">
-          <router-link to="/register">Регистрация</router-link>
+          <router-link to="/register">{{ $t('login.register') }}</router-link>
         </p>
       </form>
     </div>

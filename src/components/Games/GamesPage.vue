@@ -7,9 +7,9 @@
         <span class="user-name">{{ state.user.firstName || 'username' }}</span>
       </router-link>
       <div class="dashboard-status">
-        Всего игр: <b>{{ state.games.length }}</b>
+        {{ $t('games.total') }}: <b>{{ state.games.length }}</b>
       </div>
-      <button class="dashboard-settings" title="Настройки" @click="showSettings = true">
+      <button class="dashboard-settings" :title="$t('settings.title')" @click="showSettings = true">
         <svg width="26" height="26" fill="none">
           <circle cx="13" cy="13" r="12" stroke="#9a60d6" stroke-width="2" />
           <path d="M13 8v5l4 2" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
@@ -21,7 +21,7 @@
     <main class="games-list">
       <div class="game-item add-game-item" @click="openCreateModal">
         <div class="add-icon">+</div>
-        <div class="add-label">Создать игру</div>
+        <div class="add-label">{{ $t('games.create') }}</div>
       </div>
       <GameItem
         v-for="game in state.games"
@@ -37,19 +37,19 @@
     <!-- Settings Panel + Overlay -->
     <div v-if="showSettings" class="settings-overlay" @click.self="closeSettings">
       <aside class="settings-panel">
-        <button class="settings-close" @click="closeSettings" title="Закрыть">×</button>
-        <h2 class="settings-title">Настройки</h2>
+        <button class="settings-close" @click="closeSettings" :title="$t('common.close')">×</button>
+        <h2 class="settings-title">{{ $t('settings.title') }}</h2>
         <div class="settings-content">
           <div class="setting-item">
             <label>
-              <span>Тёмная тема</span>
+              <span>{{ $t('settings.darkTheme') }}</span>
               <input type="checkbox" v-model="darkTheme" />
             </label>
           </div>
           <!-- Добавь свои настройки тут -->
           <div class="setting-item">
             <label>
-              <span>Язык интерфейса</span>
+              <span>{{ $t('settings.language') }}</span>
               <select v-model="language">
                 <option value="ru">Русский</option>
                 <option value="en">English</option>
@@ -124,6 +124,21 @@ export default {
     state() {
       return state
     },
+  },
+  watch: {
+    darkTheme(val) {
+      document.body.classList.toggle('dark-theme', val)
+      localStorage.setItem('darkTheme', val ? '1' : '0')
+    },
+    language(val) {
+      this.$i18n.locale = val
+      localStorage.setItem('locale', val)
+    },
+  },
+  mounted() {
+    this.darkTheme = localStorage.getItem('darkTheme') === '1'
+    document.body.classList.toggle('dark-theme', this.darkTheme)
+    this.language = this.$i18n.locale
   },
   methods: {
     addChar() {
