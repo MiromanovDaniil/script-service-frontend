@@ -14,10 +14,11 @@ export default {
       name: '',
       characters: [],
       description: '',
-      fieldsToValidate: ['name', 'description'],
+      fieldsToValidate: ['name', 'description', 'characters'],
       errors: {
         name: false,
         description: false,
+        characters: false,
       },
     }
   },
@@ -28,8 +29,17 @@ export default {
         if (val) {
           this.name = val.name || ''
           this.description = val.description || ''
+          if (val.characters) {
+            this.characters = [...val.characters]
+          }
         }
       },
+    },
+  },
+  computed: {
+    charactersList() {
+      const game = state.games.find((g) => g.id === state.selectedGameId)
+      return game ? game.characters : []
     },
   },
   methods: {
@@ -93,11 +103,15 @@ export default {
       >
     </div>
     <div class="create-scene-modal-cell create-scene-modal-characters">
-      <h2 class="create-scene-modal-h2">Персонажи <span class="add-btn">+</span></h2>
-      <button type="button" class="btn">Выбрать из игры</button>
+      <h2 class="create-scene-modal-h2">Персонажи</h2>
       <Scrollview :w="'100%'" :h="'200px'" :class="{ error: this.errors.characters }">
-        <CharacterItem v-for="char of characters" />
+        <label v-for="char of charactersList" :key="char.id" class="checkbox-item">
+          <input type="checkbox" :value="char.id" v-model="characters" /> {{ char.name }}
+        </label>
       </Scrollview>
+      <span class="error-label" v-if="this.errors.characters"
+        >Это поле обязательно для заполнения</span
+      >
     </div>
   </div>
 </template>
@@ -143,5 +157,11 @@ export default {
 }
 .add-btn {
   cursor: pointer;
+}
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
 }
 </style>
