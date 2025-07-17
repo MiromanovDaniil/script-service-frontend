@@ -7,6 +7,12 @@ const defaultState = {
   selectedSceneId: null,
   selectedScriptId: null,
   token: null,
+  user: {
+    firstName: '',
+    lastName: '',
+    email: '',
+    avatar: '',
+  },
 }
 
 function load() {
@@ -14,7 +20,11 @@ function load() {
   if (raw) {
     try {
       const parsed = JSON.parse(raw)
-      return { ...defaultState, ...parsed }
+      return {
+        ...defaultState,
+        ...parsed,
+        user: { ...defaultState.user, ...(parsed.user || {}) },
+      }
     } catch (e) {
       console.error('failed to parse state', e)
     }
@@ -37,4 +47,9 @@ function clearToken() {
   saveState()
 }
 
-export { state, defaultState, saveState, setToken, clearToken }
+function updateUser(data) {
+  state.user = { ...state.user, ...data }
+  saveState()
+}
+
+export { state, defaultState, saveState, setToken, clearToken, updateUser }
