@@ -8,6 +8,8 @@
       placeholder="Краткое описание диалога"
     ></textarea>
 
+    <button class="btn" @click="saveScript">Сохранить</button>
+
     <div class="scenario-actions">
       <button @click="back" v-if="stack.length">Назад</button>
     </div>
@@ -130,12 +132,12 @@
   </svg>
 </button>
 <button @click="() => editNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
   </svg>
 </button>
 <button @click="() => deleteNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
   </svg>
 </button>
@@ -178,7 +180,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import { state } from '@/store'
+import { state, saveState } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
@@ -194,6 +196,7 @@ const showEditModal = ref(false);
 interface GraphEdge {
   id: string | number;
   line: string;
+  info: string;
 }
 
 interface GraphNode {
@@ -257,6 +260,7 @@ const nodeStartY = ref(0);
 
 function startDrag(e: MouseEvent, node: GraphNode) {
   e.stopPropagation();
+  if (!node.meta) node.meta = {};
   draggingNode.value = node;
   
   dragStartX.value = e.clientX;
@@ -271,8 +275,8 @@ function startDrag(e: MouseEvent, node: GraphNode) {
 function onDrag(e: MouseEvent) {
   if (!draggingNode.value || !draggingNode.value.meta) return;
   
-  const dx = e.clientX - dragStartX.value;
-  const dy = e.clientY - dragStartY.value;
+  const dx = (e.clientX - dragStartX.value) / scale.value;
+  const dy = (e.clientY - dragStartY.value) / scale.value;
   
   draggingNode.value.meta.x = nodeStartX.value + dx;
   draggingNode.value.meta.y = nodeStartY.value + dy;
@@ -342,6 +346,7 @@ function layoutTree() {
       .map(edge => findNodeById(edge.id))
       .filter((c): c is GraphNode => !!c);
     
+    if (Object.keys(node.meta).length > 0) return;
     if (children.length === 0) {
       let x = next * hGap;
       let y = depth * vGap;
@@ -509,7 +514,7 @@ function centerCanvasToNode(node: GraphNode) {
   }
   animateCenterTo(node.meta.x || 0, node.meta.y || 0)
 }
-
+reloadGraph
 let panStartX = 0
 let panStartY = 0
 let panning = false
@@ -637,14 +642,20 @@ function reloadGraph() {
 
 onMounted(reloadGraph);
 watch(
-  () => state,
+  () => state.selectedScriptId,
   (val) => {
-    console.log(123);
     reloadGraph();
   },
   { deep: true }
-)
+);
 
+function saveScript() {
+  state.games
+    .find(g => g.id == state.selectedGameId)
+    .scenes.find(s => s.id == state.selectedSceneId)
+    .scripts.find(s => s.id == state.selectedScriptId).result = { data: scenario.value.data }
+  saveState()
+}
 function createRootNode(): GraphNode {
   return {
     id: 'root',
@@ -807,7 +818,8 @@ function addChild(parentNode: GraphNode) {
   scenario.value.data.push(newNode);
   parentNode.to.push({
     id: newId,
-    line: 'Новая фраза'
+    line: 'Новая фраза',
+    info: 'Текст кнопки'
   });
 
   layoutTree();
@@ -865,7 +877,8 @@ function connectNode(targetNode: GraphNode) {
     if (!isSameNode && !alreadyConnected) {
       sourceNode.to.push({
         id: targetNode.id,
-        line: "Новая фраза"
+        line: "Новая фраза",
+        info: 'Текст кнопки'
       });
     }
     
@@ -984,7 +997,7 @@ function findEdgeIndex(line: Line): number {
   position: absolute;
   top: 0;
   left: 0;
-  transition: transform 0.5s ease;
+  will-change: transform; /* Оптимизация анимации */
 }
 
 .lines {
@@ -1003,6 +1016,8 @@ function findEdgeIndex(line: Line): number {
 }
 
 .node {
+  position: absolute;
+  transform: none !important;
   cursor: pointer;
   position: absolute;
   width: 120px;

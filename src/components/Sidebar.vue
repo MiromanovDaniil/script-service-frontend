@@ -1,11 +1,15 @@
 ﻿<template>
   <div id="sidebar">
-    <button @click="exit" class="btn">Выйти</button>    
+    <button @click="exit" class="btn">Выйти</button>
     <button @click="addScene" class="btn">Создать сцену</button>
-    <Scenes @addScript="addScript" :scenes="scenes"/>
+    <Scenes
+      @addScript="addScript"
+      @editScene="editScene"
+      @deleteScene="deleteScene"
+      :scenes="scenes"
+    />
   </div>
 </template>
-
 
 <style scoped>
 #sidebar {
@@ -25,26 +29,31 @@
 }
 </style>
 
-
 <script>
-import Scenes from "./Scenes.vue";
-import {state} from "../store.js";
+import Scenes from './Scenes.vue'
+import { state } from '../store.js'
 export default {
   name: 'Sidebar',
   props: ['scenes'],
   components: {
-    Scenes
+    Scenes,
   },
   methods: {
     addScript(scene) {
-      this.$emit('addScript', scene);
+      this.$emit('addScript', scene)
     },
     addScene() {
-      this.$emit('addScene', state.selectedGameId);
+      this.$emit('addScene', state.selectedGameId)
+    },
+    editScene(scene) {
+      this.$emit('editScene', scene)
+    },
+    deleteScene(scene) {
+      this.$emit('deleteScene', scene)
     },
     exit() {
-      this.$router.push('/');
-    }
-  }
+      this.$router.push('/')
+    },
+  },
 }
 </script>

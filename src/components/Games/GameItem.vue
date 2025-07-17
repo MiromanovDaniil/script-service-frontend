@@ -1,9 +1,28 @@
-﻿﻿<template>
+﻿﻿
+<template>
   <div class="game-item" @click="openGame">
+    <div class="game-item-actions">
+      <button class="icon" @click.stop="editGame" title="Редактировать">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+            fill="#7e22ce"
+          />
+        </svg>
+      </button>
+      <button class="icon" @click.stop="deleteGame" title="Удалить">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+            fill="#7e22ce"
+          />
+        </svg>
+      </button>
+    </div>
     <div class="game-item-title">
       <svg class="game-icon" width="24" height="24" fill="none">
-        <circle cx="12" cy="12" r="11" stroke="#ba82f6" stroke-width="2"/>
-        <path d="M9 15l6-6M9 9h6v6" stroke="#a66bee" stroke-width="2"/>
+        <circle cx="12" cy="12" r="11" stroke="#ba82f6" stroke-width="2" />
+        <path d="M9 15l6-6M9 9h6v6" stroke="#a66bee" stroke-width="2" />
       </svg>
       {{ game.name }}
     </div>
@@ -12,9 +31,7 @@
       <span class="game-badge">{{ game.characters.length }} персонажей</span>
     </div>
     <!-- emit the characters payload -->
-    <div class="game-item-characters" @click.stop="openCharacters">
-      персонажи
-    </div>
+    <div class="game-item-characters" @click.stop="openCharacters">персонажи</div>
   </div>
 </template>
 
@@ -22,7 +39,7 @@
 export default {
   name: 'GameItem',
   props: {
-    game: { type: Object, required: true }
+    game: { type: Object, required: true },
   },
   methods: {
     openGame() {
@@ -30,8 +47,14 @@ export default {
     },
     openCharacters() {
       this.$emit('chars', this.game)
-    }
-  }
+    },
+    editGame() {
+      this.$emit('edit', this.game)
+    },
+    deleteGame() {
+      this.$emit('delete', this.game)
+    },
+  },
 }
 </script>
 
@@ -48,13 +71,28 @@ export default {
   margin: 0;
   cursor: pointer;
   box-shadow: 0 6px 24px #e3d4f688;
-  transition: box-shadow 0.23s, transform 0.13s;
+  transition:
+    box-shadow 0.23s,
+    transform 0.13s;
   position: relative;
 }
 .game-item:hover {
   box-shadow: 0 12px 32px #cbb2e875;
   transform: translateY(-2px) scale(1.02);
   border-color: #a35bfd;
+}
+.game-item-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+}
+.icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
 }
 .game-item-title {
   font-size: 20px;

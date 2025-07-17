@@ -55,20 +55,23 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
 import ModalWindow from './ModalWindow.vue';
+import { state } from '@/store';
 
 export default {
   name: "CharacterForm",
   components: { ModalWindow },
+  props: ['edit', 'char'],
   data() {
     return {
-      name: '',
-      job: '',
-      description: '',
-      type: '',
-      mood: '',
-      speechStyle: '',
-      appearance: '',
+      name: this.char?.name,
+      job: this.char?.profession,
+      description: this.char?.extra,
+      type: this.edit ? this.char?.type : "",
+      mood: this.char?.traits,
+      speechStyle: this.char?.talk_style,
+      appearance: this.char?.look,
       fieldsToValidate: ['name', 'job', 'description', 'type', 'mood', 'speechStyle', 'appearance'],
       errors: {}
     };

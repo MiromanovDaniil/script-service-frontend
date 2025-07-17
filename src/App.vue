@@ -38,6 +38,10 @@ body {
     box-shadow: 0 2px 10px #e5d4ff33;
     transition: background 0.2s, transform 0.1s;
 }
+.btn:hover {
+  background: #e5e1ff;
+  transform: scale(1.04);
+}
 .input {
   border-radius: 10px;
   border: black 1px solid;

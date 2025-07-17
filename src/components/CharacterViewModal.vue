@@ -10,9 +10,9 @@
           v-if="localChars.length > 0"
           title="Удалить последний"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="#a352fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18M8 6v14a2 2 0 002 2h4a2 2 0 002-2V6M10 6V4a2 2 0 012-2h0a2 2 0 012 2v2"/>
-          </svg>
+                      <svg viewBox="0 0 24 24" width="28" height="28" stroke="#8f4cef" fill="#00000000" stroke-width="1.5px">
+    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+  </svg>
         </button>
         <!-- Закрыть (крестик) -->
         <button 
@@ -21,7 +21,7 @@
           title="Закрыть"
         >
           <svg width="28" height="28" fill="none">
-            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2"/>
+            <path d="M7 7l14 14M21 7L7 21" stroke="#8f4cef" stroke-width="2px"/>
           </svg>
         </button>
       </div>
@@ -42,14 +42,22 @@
             Изменить
           </button>-->
           <button 
+            @click="editCharacter(char.id)" 
+            class="icon-btn"
+            title="Изменить"
+          >
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="#8f4cef" fill="#00000000" stroke-width="1.5px">
+    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+  </svg>
+          </button>
+          <button 
             @click="deleteCharacter(char.id)" 
-            class="trash-btn"
+            class="icon-btn"
             title="Удалить"
           >
-            <svg width="20" height="20" fill="none">
-              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4a1 1 0 011 1v1H9V4a1 1 0 011-1z"
-                    stroke="#a352fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="#8f4cef" fill="#00000000" stroke-width="1.5px">
+    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+  </svg>
           </button>
         </div>
       </div>
@@ -103,7 +111,10 @@ export default {
     save() {
       this.$emit("save", this.localChars);
       this.close();
-    }
+    },
+    editCharacter(id) {
+      this.$emit('edit', id)
+    },
   }
 };
 </script>

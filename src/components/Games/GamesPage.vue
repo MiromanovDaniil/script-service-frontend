@@ -10,7 +10,10 @@
         Всего игр: <b>{{ state.games.length }}</b>
       </div>
       <button class="dashboard-settings" title="Настройки" @click="showSettings = true">
-        <svg width="26" height="26" fill="none"><circle cx="13" cy="13" r="12" stroke="#9a60d6" stroke-width="2"/><path d="M13 8v5l4 2" stroke="#9a60d6" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="26" height="26" fill="none">
+          <circle cx="13" cy="13" r="12" stroke="#9a60d6" stroke-width="2" />
+          <path d="M13 8v5l4 2" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
+        </svg>
       </button>
     </header>
 
@@ -26,6 +29,8 @@
         :game="game"
         @open="openGame"
         @chars="openCharacters"
+        @edit="editGame"
+        @delete="removeGame"
       />
     </main>
 
@@ -58,8 +63,11 @@
     <!-- Modal -->
     <CreateGameModal
       v-if="showCreateModal"
-      @close="showCreateModal = false"
-      @create="addGame"
+      :gameData="editingGame"
+      :showDelete="Boolean(editingGame)"
+      @close="closeGameModal"
+      @save="saveGame"
+      @delete="deleteGame"
       ref="createGame"
     />
 
@@ -68,29 +76,30 @@
       :characters="selectedGameCharacters"
       @close="isCharsModalVisible = false"
       @save="onSaveCharacters"
-      @add="isCharEditModalOpened = true"
+      @add="addChar"
+      @edit="editCharF"
       ref="charsModal"
     />
 
-    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal ref="createChar"/></ModalWindow>
+    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal :edit="editChar" :char="selectedGame.characters.find(c => c.id == editChar)" ref="createChar"/></ModalWindow>
   </div>
 </template>
 
 <script setup>
-  import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
-  const route = useRoute()
-  if (route.name === 'main') {
-    state.selectedGameId = null
-    state.selectedSceneId = null
-    state.selectedSceneId = null
-  }
+const route = useRoute()
+if (route.name === 'main') {
+  state.selectedGameId = null
+  state.selectedSceneId = null
+  state.selectedSceneId = null
+}
 </script>
 
 <script>
 import GameItem from '@/components/Games/GameItem.vue'
 import CreateGameModal from '@/components/Games/CreateGameModal.vue'
-import { state } from '@/store'
+import { state, saveState } from '@/store'
 import CharactersModal from '../CharacterViewModal.vue'
 import ModalWindow from '../ModalWindow.vue'
 import CreateCharacterModal from '../CreateCharacterModal.vue'
@@ -100,38 +109,61 @@ export default {
   data() {
     return {
       showCreateModal: false,
+      editingGame: null,
       isCharsModalVisible: false,
       showSettings: false,
       darkTheme: false,
       language: 'ru',
-      selectedGame: null,             
+      selectedGame: null,
       selectedGameCharacters: [],
-      isCharEditModalOpened: false
+      isCharEditModalOpened: false,
+      editChar: ""
     }
   },
   computed: {
     state() {
       return state
-    }
+    },
   },
   methods: {
+    addChar() {
+      this.isCharEditModalOpened = true;
+      this.editChar = "";
+    },
+    editCharF(id) {
+      this.isCharEditModalOpened = true;
+      this.editChar = id;
+    },
     openCreateModal() {
+      this.editingGame = null
       this.showCreateModal = true
     },
-    addGame() {
-      let child = this.$refs.createGame;
-      if(child.validate())
-      state.games.push({
-        id: Date.now().toString(),
-        name: child.game.name,
-        description: child.game.description,
-        genre: child.game.genre,
-        techLevel: child.game.techLevel,
-        tonality: child.game.tonality,
-        scenes: [],
-        characters: [],
-      })
+    editGame(game) {
+      this.editingGame = { ...game }
+      this.showCreateModal = true
+    },
+    saveGame(game) {
+      if (this.editingGame) {
+        const idx = state.games.findIndex((g) => g.id === this.editingGame.id)
+        if (idx !== -1) {
+          state.games[idx] = { ...state.games[idx], ...game }
+        }
+      } else {
+        state.games.push({ id: Date.now().toString(), ...game, scenes: [], characters: [] })
+      }
+      saveState()
+      this.closeGameModal()
+    },
+    deleteGame() {
+      if (this.editingGame) {
+        state.games = state.games.filter((g) => g.id !== this.editingGame.id)
+        saveState()
+      }
+      this.closeGameModal()
+    },
+    closeGameModal() {
       this.showCreateModal = false
+      this.editingGame = null
     },
     openGame(game) {
       this.$router.push('/' + game.id)
@@ -144,26 +176,38 @@ export default {
     onSaveCharacters(newChars) {
       this.selectedGame.characters = newChars
       this.isCharsModalVisible = false
+      saveState()
     },
     closeSettings() {
       this.showSettings = false
     },
+    removeGame(game) {
+      state.games = state.games.filter((g) => g.id !== game.id)
+      saveState()
+    },
     save() {
       let ch = this.$refs.createChar;
       if(this.$refs.createChar.validate()) {
-        this.$refs.charsModal.localChars.push({
+        let res = {
           "id": Date.now().toString(),
           "name": ch.name,
           "profession": ch.job,
           "talk_style": ch.speechStyle,
+          "type": ch.type,
           "traits": ch.mood,
           "look": ch.appearance,
           "extra": ch.description
-        });
+        };
+        if(ch.edit){
+          this.$refs.charsModal.localChars[this.$refs.charsModal.localChars.findIndex(c => c.id == ch.char.id)] = res;
+        }
+        else {
+          this.$refs.charsModal.localChars.push(res);
+        }
         this.isCharEditModalOpened = false;
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -268,11 +312,17 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
-  animation: slideInRight 0.27s cubic-bezier(.55,.06,.48,1.17);
+  animation: slideInRight 0.27s cubic-bezier(0.55, 0.06, 0.48, 1.17);
 }
 @keyframes slideInRight {
-  from { transform: translateX(120%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 .settings-close {
   position: absolute;
@@ -311,7 +361,7 @@ export default {
   gap: 18px;
 }
 .setting-item select,
-.setting-item input[type="checkbox"] {
+.setting-item input[type='checkbox'] {
   margin-left: 18px;
 }
 .add-game-item {
@@ -326,7 +376,10 @@ export default {
   min-width: 200px;
   box-shadow: 0 2px 18px #c9b5eb54;
   cursor: pointer;
-  transition: box-shadow 0.19s, border-color 0.15s, transform 0.17s;
+  transition:
+    box-shadow 0.19s,
+    border-color 0.15s,
+    transform 0.17s;
   margin: 0;
   position: relative;
 }
