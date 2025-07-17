@@ -1,6 +1,6 @@
 ﻿<template>
   <div id="sidebar">
-    <button @click="exit" class="btn">{{ $t('login.register') }}Выйти</button>
+    <button @click="exit" class="btn">Выйти</button>
     <button @click="addScene" class="btn">Создать сцену</button>
     <Scenes
       @addScript="addScript"
