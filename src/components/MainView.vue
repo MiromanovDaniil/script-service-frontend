@@ -180,7 +180,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import { state } from '@/store'
+import { state, saveState } from '@/store'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
@@ -649,9 +649,12 @@ watch(
   { deep: true }
 );
 
-function saveScript(){
-  console.log('work');
-  state.games.find(g => g.id == state.selectedGameId).scenes.find(s => s.id == state.selectedSceneId).scripts.find(s => s.id == state.selectedScriptId).result = {'data': scenario.value.data};
+function saveScript() {
+  state.games
+    .find(g => g.id == state.selectedGameId)
+    .scenes.find(s => s.id == state.selectedSceneId)
+    .scripts.find(s => s.id == state.selectedScriptId).result = { data: scenario.value.data }
+  saveState()
 }
 function createRootNode(): GraphNode {
   return {

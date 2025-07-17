@@ -1,20 +1,28 @@
 ﻿<template>
   <div id="scenes">
     <Scrollview :w="'100%'" :h="'100%'">
-      <SceneItem v-if="scenes && scenes.length > 0" :key="scene.id" v-for="scene of scenes" :scene="scene" @addScript="addScript" />
+      <SceneItem
+        v-if="scenes && scenes.length > 0"
+        :key="scene.id"
+        v-for="scene of scenes"
+        :scene="scene"
+        @addScript="addScript"
+        @editScene="editScene"
+        @deleteScene="deleteScene"
+      />
     </Scrollview>
   </div>
 </template>
 
 <style scoped>
-  #scenes {
-    background: #f3e8ff;
-    height: calc(100% - 36px);
-  }
+#scenes {
+  background: #f3e8ff;
+  height: calc(100% - 36px);
+}
 </style>
 
 <script>
-import SceneItem from "./SceneItem.vue";
+import SceneItem from './SceneItem.vue'
 import Scrollview from '@/components/Scrollview.vue'
 
 export default {
@@ -22,13 +30,18 @@ export default {
   props: ['scenes'],
   components: {
     Scrollview,
-    SceneItem
+    SceneItem,
   },
   methods: {
     addScript(scene) {
-      this.$emit('addScript', scene);
-    }
-  }
+      this.$emit('addScript', scene)
+    },
+    editScene(scene) {
+      this.$emit('editScene', scene)
+    },
+    deleteScene(scene) {
+      this.$emit('deleteScene', scene)
+    },
+  },
 }
-
 </script>

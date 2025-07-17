@@ -3,8 +3,16 @@
     <div class="modal-window">
       <!-- Кнопки удалить и закрыть -->
       <div class="modal-actions">
-        <button class="icon-btn" @click="remove" v-if="showDelete"><svg width="28" height="28" fill="none"><path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2"/></svg></button>
-        <button class="icon-btn" @click="close"><svg width="28" height="28" fill="none"><path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2"/></svg></button>
+        <button class="icon-btn" @click="remove" v-if="showDelete">
+          <svg width="28" height="28" fill="none">
+            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />
+          </svg>
+        </button>
+        <button class="icon-btn" @click="close">
+          <svg width="28" height="28" fill="none">
+            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />
+          </svg>
+        </button>
       </div>
       <h1 class="modal-title">Игра</h1>
       <form @submit.prevent="submit" class="modal-form">
@@ -13,11 +21,11 @@
           <div>
             <div class="field-group">
               <label class="field-label">Название</label>
-              <input v-model="game.name" required class="input"/>
+              <input v-model="game.name" required class="input" />
             </div>
             <div class="field-group">
               <label class="field-label">Характеристики мира</label>
-              <textarea v-model="game.description" class="input textarea"/>
+              <textarea v-model="game.description" class="input textarea" />
             </div>
           </div>
           <!-- Правая колонка -->
@@ -33,7 +41,6 @@
                 <option>Комедия</option>
                 <option>Ужасы</option>
                 <option>Стратегия</option>
-                
               </select>
             </div>
             <div class="field-group">
@@ -56,8 +63,7 @@
                 <option>Героическая</option>
                 <option>Трагическая</option>
                 <option>Комическая</option>
-                <option>Сказочная</option>                    
-          
+                <option>Сказочная</option>
               </select>
             </div>
           </div>
@@ -72,9 +78,10 @@
 
 <script>
 export default {
-  name: "CreateGameModal",
+  name: 'CreateGameModal',
   props: {
-    showDelete: { type: Boolean, default: false }
+    showDelete: { type: Boolean, default: false },
+    gameData: { type: Object, default: null },
   },
   data() {
     return {
@@ -83,45 +90,49 @@ export default {
         description: '',
         genre: '',
         techLevel: '',
-        tonality: 'Нейтральная'
-
-      
+        tonality: 'Нейтральная',
       },
       fieldsToValidate: ['name', 'description', 'genre', 'techLevel'],
-      errors: {}
+      errors: {},
     }
+  },
+  watch: {
+    gameData: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.game = { ...val }
+        }
+      },
+    },
   },
   methods: {
     validate() {
       this.resetErrors()
-        const errors = []
+      const errors = []
 
-        const fieldLabels = {
-          name: 'Название',
-          answers_count: 'Количество ответов',
-          branches_count: 'Количество сюжетных веток',
-          characters: 'Персонажи',
-          description: 'Краткое содержание',
-        }
+      const fieldLabels = {
+        name: 'Название',
+        answers_count: 'Количество ответов',
+        branches_count: 'Количество сюжетных веток',
+        characters: 'Персонажи',
+        description: 'Краткое содержание',
+      }
 
-        for (const field of this.fieldsToValidate) {
-          const value = this.game[field]
+      for (const field of this.fieldsToValidate) {
+        const value = this.game[field]
 
-          if (typeof value === 'object') {
-            if (Object.keys(value).length === 0) {
-              this.errors[field] = true
-            }
-          } else if (typeof value === 'string') {
-            if (!value.trim()) {
-              this.errors[field] = true
-            }
-          } else if (
-            value === null ||
-            value === undefined ||
-            value === 0
-          ) {
+        if (typeof value === 'object') {
+          if (Object.keys(value).length === 0) {
             this.errors[field] = true
           }
+        } else if (typeof value === 'string') {
+          if (!value.trim()) {
+            this.errors[field] = true
+          }
+        } else if (value === null || value === undefined || value === 0) {
+          this.errors[field] = true
+        }
 
         return !errors.length
       }
@@ -138,19 +149,25 @@ export default {
       this.$emit('delete')
     },
     submit() {
-      this.$emit('create', { ...this.game })
+      this.$emit('save', { ...this.game })
       this.close()
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style scoped>
 /* Затемнение фона */
 .modal-bg {
-  position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(100, 60, 90, 0.48);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 999;
 }
 /* Окно */
@@ -168,8 +185,10 @@ export default {
 
 .modal-actions {
   position: absolute;
-  top: 22px; right: 28px;
-  display: flex; gap: 16px;
+  top: 22px;
+  right: 28px;
+  display: flex;
+  gap: 16px;
 }
 .icon-btn {
   background: none;
@@ -242,7 +261,7 @@ export default {
   justify-content: flex-end;
 }
 .save-btn {
-  background: linear-gradient(90deg,#c08cff 20%, #cde0ff 100%);
+  background: linear-gradient(90deg, #c08cff 20%, #cde0ff 100%);
   color: #601f7e;
   border: none;
   border-radius: 7px;
@@ -251,7 +270,9 @@ export default {
   cursor: pointer;
   font-weight: 600;
   box-shadow: 0 2px 10px #e5d4ff33;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 .save-btn:hover {
   background: #e5e1ff;

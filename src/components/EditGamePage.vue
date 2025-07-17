@@ -4,13 +4,13 @@ import MainView from './MainView.vue'
 import ModalWindow from './ModalWindow.vue'
 import CreateScriptModal from './CreateScriptModal.vue'
 import CreateSceneModal from './CreateSceneModal.vue'
-import { state, defaultState } from '@/store.js'
+import { state, defaultState, saveState } from '@/store.js'
 import '@/types.js'
 import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
-import { submitDialogData } from '../../api/api';
+import { submitDialogData } from '../../api/api'
 import { scene } from '@/types.js'
 
 export default {
@@ -74,13 +74,23 @@ export default {
       this.createScriptSceneId = scene
     },
     addScene() {
+      this.sceneToEdit = null
       this.setCreateSceneModalState(true)
+    },
+    editScene(scene) {
+      this.sceneToEdit = { ...scene }
+      this.setCreateSceneModalState(true)
+    },
+    deleteScene(scene) {
+      const game = state.games[state.games.findIndex((g) => g.id === state.selectedGameId)]
+      game.scenes = game.scenes.filter((s) => s.id !== scene.id)
+      saveState()
     },
     saveScript() {
       if (this.$refs.child.validate()) {
         let child = this.$refs.child
-        let gameId = this.createScriptGameId;
-        let sceneId = this.createScriptSceneId;
+        let gameId = this.createScriptGameId
+        let sceneId = this.createScriptSceneId
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
         let id = Date.now().toString()
@@ -100,59 +110,80 @@ export default {
           infoData: child.itemData,
           additional: child.additional,
           result: {},
-        };
-        let scene = scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)];
+        }
+        let scene = scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)]
         scene.scripts.push(dialog)
         this.setCreateScriptModalState(false)
 
-        let goals = [];
-        if(dialog.infoData.gets){
+        let goals = []
+        if (dialog.infoData.gets) {
           goals.push({
-            'type': 'получение информации',
-            'object': dialog.infoData.name,
-            'condition': dialog.infoData.condition
-          });
+            type: 'получение информации',
+            object: dialog.infoData.name,
+            condition: dialog.infoData.condition,
+          })
         }
-        if(dialog.itemData.gets){
+        if (dialog.itemData.gets) {
           goals.push({
-            'type': 'поолучение предмета',
-            'object': dialog.itemData.name,
-            'condition': dialog.itemData.condition
-          });
+            type: 'поолучение предмета',
+            object: dialog.itemData.name,
+            condition: dialog.itemData.condition,
+          })
         }
 
         const dialogData = {
-          "npc": game.characters.find(c => c.id == child.npc),
-          "hero": game.characters.find(c => c.id == child.main_character),
-          "world_settings": game.description,
-          "NPC_to_hero_relation": dialog.to_main_character_relations,
-          "hero_to_NPC_relation": dialog.to_npc_relations,
-          "mx_answers_cnt": dialog.answers_to_m,
-          "mn_answers_cnt": dialog.answers_from_m,
-          "mx_depth": dialog.answers_to_n,
-          "mn_depth": dialog.answers_from_m,
-          "scene": scene.description,
-          "genre": game.genre,
-          "epoch": game.techLevel,
-          "tonality": game.tonality,
-          "extra": dialog.additional,
-          "context": dialog.description,
-          "goals": goals
-        };
-        submitDialogData(dialogData).then(response => scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)].scripts.find(s => s.id == id).result = response).catch(error => console.error('Ошибка:', error));
+          npc: game.characters.find((c) => c.id == child.npc),
+          hero: game.characters.find((c) => c.id == child.main_character),
+          world_settings: game.description,
+          NPC_to_hero_relation: dialog.to_main_character_relations,
+          hero_to_NPC_relation: dialog.to_npc_relations,
+          mx_answers_cnt: dialog.answers_to_m,
+          mn_answers_cnt: dialog.answers_from_m,
+          mx_depth: dialog.answers_to_n,
+          mn_depth: dialog.answers_from_m,
+          scene: scene.description,
+          genre: game.genre,
+          epoch: game.techLevel,
+          tonality: game.tonality,
+          extra: dialog.additional,
+          context: dialog.description,
+          goals: goals,
+        }
+        submitDialogData(dialogData)
+          .then(
+            (response) =>
+              (scenes[
+                scenes.findIndex((gameId) => gameId === this.createScriptSceneId)
+              ].scripts.find((s) => s.id == id).result = response),
+          )
+          .catch((error) => console.error('Ошибка:', error))
       }
     },
     saveScene() {
       if (this.$refs.sceneChild.validate()) {
         let child = this.$refs.sceneChild
         let game = state.games[state.games.findIndex((game) => game.id === state.selectedGameId)]
-        game.scenes.push({
-          id: Date.now(),
-          name: child.name,
-          character: child.characters,
-          description: child.description,
-          scripts: [],
-        })
+        if (this.sceneToEdit) {
+          const idx = game.scenes.findIndex((s) => s.id === this.sceneToEdit.id)
+          if (idx !== -1) {
+            game.scenes[idx] = {
+              ...game.scenes[idx],
+              name: child.name,
+              character: child.characters,
+              description: child.description,
+            }
+          }
+        } else {
+          game.scenes.push({
+            id: Date.now(),
+            name: child.name,
+            character: child.characters,
+            description: child.description,
+            scripts: [],
+          })
+        }
+        saveState()
+        this.sceneToEdit = null
         this.setCreateSceneModalState(false)
       }
     },
@@ -170,7 +201,8 @@ export default {
       game: null,
       answerLoadingModalOpened: false,
       createCharacterModalOpened: false,
-      
+
+      sceneToEdit: null,
     }
   },
   mounted() {
@@ -207,8 +239,19 @@ export default {
 
 <template>
   <div class="edit-game-page-container" v-if="game">
-    <Sidebar v-if="game" :scenes="game.scenes" @addScene="addScene" @addScript="addScript" />
-    <MainView v-if="!(state.selectedSceneId === null || state.selectedScriptId === null)" @createScene="addScene" @createScript="addScript" />
+    <Sidebar
+      v-if="game"
+      :scenes="game.scenes"
+      @addScene="addScene"
+      @addScript="addScript"
+      @editScene="editScene"
+      @deleteScene="deleteScene"
+    />
+    <MainView
+      v-if="!(state.selectedSceneId === null || state.selectedScriptId === null)"
+      @createScene="addScene"
+      @createScript="addScript"
+    />
     <span v-else>Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
@@ -220,8 +263,6 @@ export default {
       <CreateScriptModal ref="child" />
     </ModalWindow>
 
-  
-
     <ModalWindow
       v-if="createSceneModalOpened"
       :header="'Создать сцену'"
@@ -229,17 +270,16 @@ export default {
       @closeModal="setCreateSceneModalState"
       @validate-request="saveScene"
     >
-      <CreateSceneModal ref="sceneChild" />
+      <CreateSceneModal ref="sceneChild" :sceneData="sceneToEdit" />
     </ModalWindow>
 
-    
     <ModalWindow
       v-if="answerLoadingModalOpened"
       :header="'Идет загрузка...'"
       @closeModal="setAnswerLoadingModalState"
       :show-buttons="false"
     >
-      <AnswerLoadingModal/>
+      <AnswerLoadingModal />
     </ModalWindow>
     <ModalWindow
       v-if="createCharacterModalOpened"
@@ -247,7 +287,7 @@ export default {
       @closeModal="setCreateCharacterModalState"
       :show-buttons="true"
     >
-      <CreateCharacterModal/>
+      <CreateCharacterModal />
     </ModalWindow>
   </div>
 </template>
