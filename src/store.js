@@ -6,6 +6,7 @@ const defaultState = {
   selectedGameId: null,
   selectedSceneId: null,
   selectedScriptId: null,
+  token: null,
 }
 
 function load() {
@@ -26,4 +27,14 @@ function saveState() {
   localStorage.setItem('scenario-data', JSON.stringify(toRaw(state)))
 }
 
-export { state, defaultState, saveState }
+function setToken(token) {
+  state.token = token
+  saveState()
+}
+
+function clearToken() {
+  state.token = null
+  saveState()
+}
+
+export { state, defaultState, saveState, setToken, clearToken }
