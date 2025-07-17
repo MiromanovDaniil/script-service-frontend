@@ -172,7 +172,7 @@ export default {
             game.scenes[idx] = {
               ...game.scenes[idx],
               name: child.name,
-              character: child.characters,
+              characters: child.characters,
               description: child.description,
             }
           }
@@ -180,7 +180,7 @@ export default {
           game.scenes.push({
             id: Date.now(),
             name: child.name,
-            character: child.characters,
+            characters: child.characters,
             description: child.description,
             scripts: [],
           })
@@ -263,7 +263,7 @@ export default {
       @closeModal="setCreateScriptModalState"
       @validate-request="saveScript"
     >
-      <CreateScriptModal ref="child" />
+      <CreateScriptModal ref="child" :scene="createScriptSceneId" />
     </ModalWindow>
 
     <ModalWindow
