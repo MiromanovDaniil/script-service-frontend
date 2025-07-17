@@ -89,5 +89,12 @@ body {
   color: #30015f; 
 }
 
+.icon-with-anim {
+  transition: transform 0.1s;
+}
+
+.icon-with-anim:hover {
+  transform: scale(1.18) rotate(7deg);
+}
 
 </style>
