@@ -16,7 +16,7 @@ import { scene } from '@/types.js'
 export default {
   name: 'EditGamePage',
   computed: {
-    state() {
+    stateLoc() {
       return state
     },
   },
@@ -87,6 +87,15 @@ export default {
       const game = state.games[state.games.findIndex((g) => g.id === state.selectedGameId)]
       game.scenes = game.scenes.filter((s) => s.id !== scene.id)
       saveState()
+    },
+    deleteScript(script, scene) {
+      const game = state.games[state.games.findIndex((g) => g.id === state.selectedGameId)]
+      const sc = game.scenes[game.scenes.findIndex((s) => s.id === scene.id)];
+      sc.scripts = sc.scripts.filter(s => s.id !== script.id)
+      saveState();
+    },
+    editScript(script, scene) {
+      this.$emit('editScript', script, scene)
     },
     saveScript() {
       if (this.$refs.child.validate()) {
@@ -249,9 +258,11 @@ export default {
       @addScript="addScript"
       @editScene="editScene"
       @deleteScene="deleteScene"
+      @editScript="editScript"
+      @deleteScript="deleteScript"
     />
     <MainView
-      v-if="!(state.selectedSceneId === null || state.selectedScriptId === null)"
+      v-if="!(stateLoc.selectedSceneId === null || stateLoc.selectedScriptId === null)"
       @createScene="addScene"
       @createScript="addScript"
     />

@@ -66,6 +66,12 @@ export default {
     deleteScene() {
       this.$emit('deleteScene', this.scene)
     },
+    deleteScript(script) {
+      this.$emit('deleteScript', script, this.scene)
+    },
+    editScript(script) {
+      this.$emit('editScript', script, this.scene)
+    },
   },
   mounted() {
     window.addEventListener('click', (event) => {
@@ -89,7 +95,7 @@ export default {
         <button class="scene-btn icon-with-anim" @click.stop="deleteScene" title="Удалить"><svg viewBox="0 0 24 24" width="24" height="24" stroke="#a352fa" fill="#00000000" stroke-width="1.5px">
       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
     </svg></button>
-    <button class="scene-btn icon-with-anim" @click.stop="download(scene.id)" title="Удалить"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a352fa" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="arcs"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"></path></svg></button>
+    <button class="scene-btn icon-with-anim" @click.stop="download(scene.id)" title="Скачать"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a352fa" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="arcs"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"></path></svg></button>
     </div>
     <div class="accordion" @click="toggle" @contextmenu.prevent="showContextMenu($event, scene.id)">
       <span class="accordion-arrow flipped-vert" :class="{ active: isOpen }"
@@ -114,6 +120,8 @@ export default {
           :key="script.id"
           :scene="scene"
           :script="script"
+          @editScript="editScript"
+          @deleteScript="deleteScript"
         />
         <span v-if="scene.scripts.length === 0" class="no-scripts">В сцене еще нет диалогов</span>
       </div>

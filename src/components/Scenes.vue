@@ -9,6 +9,8 @@
         @addScript="addScript"
         @editScene="editScene"
         @deleteScene="deleteScene"
+        @editScript="editScript"
+        @deleteScript="deleteScript"
       />
     </Scrollview>
   </div>
@@ -41,6 +43,12 @@ export default {
     },
     deleteScene(scene) {
       this.$emit('deleteScene', scene)
+    },
+    deleteScript(script, scene) {
+      this.$emit('deleteScript', script, scene)
+    },
+    editScript(script, scene) {
+      this.$emit('editScript', script, scene)
     },
   },
 }

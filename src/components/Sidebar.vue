@@ -6,6 +6,8 @@
       @addScript="addScript"
       @editScene="editScene"
       @deleteScene="deleteScene"
+      @editScript="editScript"
+      @deleteScript="deleteScript"
       :scenes="scenes"
     />
   </div>
@@ -53,6 +55,12 @@ export default {
     },
     exit() {
       this.$router.push('/')
+    },
+    deleteScript(script, scene) {
+      this.$emit('deleteScript', script, scene)
+    },
+    editScript(script, scene) {
+      this.$emit('editScript', script, scene)
     },
   },
 }
