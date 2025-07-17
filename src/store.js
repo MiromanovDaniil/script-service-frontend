@@ -1,11 +1,11 @@
-﻿import { reactive, toRaw, watch } from 'vue'
+﻿import { reactive, toRaw } from 'vue'
 
 // СТРУКТУРА ДАННЫХ
 const defaultState = {
   games: [],
   selectedGameId: null,
   selectedSceneId: null,
-  selectedScriptId: null
+  selectedScriptId: null,
 }
 
 function load() {
@@ -22,13 +22,8 @@ function load() {
 }
 
 const state = reactive(load())
+function saveState() {
+  localStorage.setItem('scenario-data', JSON.stringify(toRaw(state)))
+}
 
-watch(
-  () => state,
-  (val) => {
-    localStorage.setItem('scenario-data', JSON.stringify(toRaw(val)))
-  },
-  { deep: true }
-)
-
-export { state, defaultState }
+export { state, defaultState, saveState }
