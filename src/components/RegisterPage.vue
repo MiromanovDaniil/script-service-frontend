@@ -21,6 +21,7 @@
 <script>
 import { registerUser } from '@/api/api.js'
 import logger from '@/logger'
+import notifications from '@/notifications'
 
 export default {
   name: 'RegisterPage',
@@ -35,9 +36,11 @@ export default {
       try {
         await registerUser({ username: this.username, password: this.password })
         logger.add('User registered')
+        notifications.notify('User registered')
         this.$router.push('/login')
       } catch (e) {
         logger.add('Register failed')
+        notifications.notify('Register failed')
       }
     }
   }

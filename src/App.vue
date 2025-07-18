@@ -1,10 +1,14 @@
 <script>
-  //import "@/../api/api.js"
+import Notifications from '@/components/Notifications.vue'
+export default {
+  components: { Notifications }
+}
 </script>
 
 <template>
   <div id="app">
     <router-view />
+    <Notifications />
   </div>
 </template>
 

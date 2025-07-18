@@ -177,6 +177,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { state, saveState } from '@/store'
+import notifications from '@/notifications'
 import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
@@ -651,6 +652,7 @@ function saveScript() {
     .scenes.find(s => s.id == state.selectedSceneId)
     .scripts.find(s => s.id == state.selectedScriptId).result = { data: scenario.value.data }
   saveState()
+  notifications.notify('Script updated')
 }
 function createRootNode(): GraphNode {
   return {
