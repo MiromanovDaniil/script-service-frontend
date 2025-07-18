@@ -10,6 +10,7 @@ A beautiful Vue 3 application for creating and editing interactive stories.  It 
 - Built with [Vue 3](https://vuejs.org/) + [Vite](https://vitejs.dev/) for a fast developer experience
 - Localisation support via **vue-i18n**
 - Unit testing configured with **Vitest**
+- In-app notifications for key events
 
 ## Project Structure
 ```
@@ -41,5 +42,8 @@ npm run build
 ```bash
 npm run test:unit
 ```
+
+Notifications about saved scripts, scenes and login events appear in the top
+right corner of the screen.
 
 Enjoy building your scripts! :sparkles:

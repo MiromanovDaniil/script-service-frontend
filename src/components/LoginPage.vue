@@ -22,6 +22,7 @@
 import { loginUser } from '@/api/api.js'
 import { setToken } from '@/store'
 import logger from '@/logger'
+import notifications from '@/notifications'
 
 export default {
   name: 'LoginPage',
@@ -38,10 +39,12 @@ export default {
         if (result && result.token) {
           setToken(result.token)
           logger.add('User logged in')
+          notifications.notify('User logged in')
           this.$router.push('/')
         }
       } catch (e) {
         logger.add('Login failed')
+        notifications.notify('Login failed')
       }
     }
   }

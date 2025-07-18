@@ -12,6 +12,7 @@ import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
 import { submitDialogData } from '../api/api'
 import { scene } from '@/types.js'
+import notifications from '@/notifications'
 
 export default {
   name: 'EditGamePage',
@@ -161,6 +162,7 @@ export default {
           .catch((error) => console.error('Ошибка:', error))
       }
       saveState()
+      notifications.notify('Script saved')
     },
     saveScene() {
       if (this.$refs.sceneChild.validate()) {
@@ -186,6 +188,7 @@ export default {
           })
         }
         saveState()
+        notifications.notify('Scene saved')
         this.sceneToEdit = null
         this.setCreateSceneModalState(false)
       }
