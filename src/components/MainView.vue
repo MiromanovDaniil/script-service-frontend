@@ -8,11 +8,6 @@
 
     <div class="scenario-actions">
       <button @click="back" v-if="stack.length">Назад</button>
-      <select v-model="selectedVoiceName" class="voice-select">
-        <option v-for="v in voices" :key="v.name" :value="v.name">
-          {{ v.name }} ({{ v.lang }})
-        </option>
-      </select>
     </div>
 
 
@@ -186,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { state, saveState } from '@/store'
 import notifications from '@/notifications'
 import { mount } from '@vue/test-utils'
@@ -195,30 +190,14 @@ import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
 
-const voices = ref<SpeechSynthesisVoice[]>([]);
-const selectedVoiceName = ref<string>('');
-
-function updateVoices() {
-  voices.value = window.speechSynthesis.getVoices();
-  if (!selectedVoiceName.value && voices.value.length) {
-    const defaultVoice = voices.value.find(v => v.default) || voices.value[0];
-    selectedVoiceName.value = defaultVoice?.name || '';
-  }
-}
-
-onMounted(() => {
-  updateVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', updateVoices);
-});
-
-onBeforeUnmount(() => {
-  window.speechSynthesis.removeEventListener('voiceschanged', updateVoices);
-});
 
 function playSpeech(text: string) {
   if (!text) return;
   const utterance = new SpeechSynthesisUtterance(text);
-  const voice = voices.value.find(v => v.name === selectedVoiceName.value);
+  const storedVoiceName = localStorage.getItem('voiceName') || '';
+  const voice = window.speechSynthesis
+    .getVoices()
+    .find((v) => v.name === storedVoiceName);
   if (voice) utterance.voice = voice;
   window.speechSynthesis.speak(utterance);
 }
@@ -1333,11 +1312,4 @@ function findEdgeIndex(line: Line): number {
   fill: #6b21a8;
 }
 
-.voice-select {
-  padding: 4px 6px;
-  background: #ede9fe;
-  border: 1px solid #c4b5fd;
-  border-radius: 4px;
-  color: #3b0764;
-}
 </style>
