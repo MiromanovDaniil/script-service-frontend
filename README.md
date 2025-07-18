@@ -44,6 +44,7 @@ npm run test:unit
 ```
 
 Notifications about saved scripts, scenes and login events appear in the top
-right corner of the screen.
+right corner of the screen. They display in green and fade away after a few
+seconds.
 
 Enjoy building your scripts! :sparkles:
