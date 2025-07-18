@@ -12,6 +12,7 @@
 
     <div class="scenario-actions">
       <button @click="back" v-if="stack.length">Назад</button>
+      <button @click="openPreview">Предпросмотр</button>
     </div>
 
 
@@ -175,6 +176,12 @@
     <button @click="saveEdgeText">Сохранить</button>
   </div>
 </dialog>
+    <div v-if="showPreview" class="preview-overlay" @click.self="closePreview">
+      <div class="preview-dialog">
+        <button class="close-btn" @click="closePreview">×</button>
+        <pre>{{ previewText }}</pre>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -192,6 +199,23 @@ const emit = defineEmits(['createScene'])
 
 const editingNode = ref<GraphNode | null>(null);
 const showEditModal = ref(false);
+const showPreview = ref(false);
+
+const currentScript = computed(() => {
+  const game = state.games.find(g => g.id == state.selectedGameId);
+  if (!game) return null;
+  const scene = game.scenes.find(s => s.id == state.selectedSceneId);
+  if (!scene) return null;
+  return scene.scripts.find(s => s.id == state.selectedScriptId) || null;
+});
+
+const previewText = computed(() => {
+  const script = currentScript.value;
+  if (script && script.result && Array.isArray(script.result.data)) {
+    return JSON.stringify(script.result.data, null, 2);
+  }
+  return 'Нет данных для предпросмотра';
+});
 
 interface GraphEdge {
   id: string | number;
@@ -492,6 +516,14 @@ function handleNodeRegenerate() {
 function closeEditModal() {
   showEditModal.value = false;
   editingNode.value = null;
+}
+
+function openPreview() {
+  showPreview.value = true;
+}
+
+function closePreview() {
+  showPreview.value = false;
 }
 
 function animateCenterTo(x: number, y: number) {
@@ -1294,5 +1326,38 @@ function findEdgeIndex(line: Line): number {
 
 .icon-button:hover .icon {
   fill: #6b21a8;
+}
+
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.preview-dialog {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 80%;
+  max-height: 80%;
+  overflow: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
 }
 </style>
