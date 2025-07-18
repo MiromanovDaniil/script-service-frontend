@@ -9,6 +9,7 @@
       <div class="dashboard-status">
         {{ $t('games.total') }}: <b>{{ state.games.length }}</b>
       </div>
+      <router-link to="/search" class="search-link">Поиск</router-link>
       <button class="dashboard-settings" :title="$t('settings.title')" @click="showSettings = true">
         <svg width="26" height="26" fill="none">
           <circle cx="13" cy="13" r="12" stroke="#9a60d6" stroke-width="2" />
@@ -81,7 +82,17 @@
       ref="charsModal"
     />
 
-    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal :edit="editChar" :char="selectedGame.characters.find(c => c.id == editChar)" ref="createChar"/></ModalWindow>
+    <ModalWindow
+      v-if="isCharEditModalOpened"
+      @closeModal="isCharEditModalOpened = false"
+      :showButtons="true"
+      :header="'Персонаж'"
+      @validate-request="save"
+      ><CreateCharacterModal
+        :edit="editChar"
+        :char="selectedGame.characters.find((c) => c.id == editChar)"
+        ref="createChar"
+    /></ModalWindow>
   </div>
 </template>
 
@@ -117,7 +128,7 @@ export default {
       selectedGame: null,
       selectedGameCharacters: [],
       isCharEditModalOpened: false,
-      editChar: ""
+      editChar: '',
     }
   },
   computed: {
@@ -142,12 +153,12 @@ export default {
   },
   methods: {
     addChar() {
-      this.isCharEditModalOpened = true;
-      this.editChar = "";
+      this.isCharEditModalOpened = true
+      this.editChar = ''
     },
     editCharF(id) {
-      this.isCharEditModalOpened = true;
-      this.editChar = id;
+      this.isCharEditModalOpened = true
+      this.editChar = id
     },
     openCreateModal() {
       this.editingGame = null
@@ -201,25 +212,26 @@ export default {
       saveState()
     },
     save() {
-      let ch = this.$refs.createChar;
-      if(this.$refs.createChar.validate()) {
+      let ch = this.$refs.createChar
+      if (this.$refs.createChar.validate()) {
         let res = {
-          "id": Date.now().toString(),
-          "name": ch.name,
-          "profession": ch.job,
-          "talk_style": ch.speechStyle,
-          "type": ch.type,
-          "traits": ch.mood,
-          "look": ch.appearance,
-          "extra": ch.description
-        };
-        if(ch.edit){
-          this.$refs.charsModal.localChars[this.$refs.charsModal.localChars.findIndex(c => c.id == ch.char.id)] = res;
+          id: Date.now().toString(),
+          name: ch.name,
+          profession: ch.job,
+          talk_style: ch.speechStyle,
+          type: ch.type,
+          traits: ch.mood,
+          look: ch.appearance,
+          extra: ch.description,
         }
-        else {
-          this.$refs.charsModal.localChars.push(res);
+        if (ch.edit) {
+          this.$refs.charsModal.localChars[
+            this.$refs.charsModal.localChars.findIndex((c) => c.id == ch.char.id)
+          ] = res
+        } else {
+          this.$refs.charsModal.localChars.push(res)
         }
-        this.isCharEditModalOpened = false;
+        this.isCharEditModalOpened = false
       }
     },
   },
@@ -281,6 +293,16 @@ export default {
   padding: 7px 20px 7px 18px;
   box-shadow: 0 2px 12px #e1d1f622;
   justify-self: center;
+}
+
+.search-link {
+  color: #7c37a5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.search-link:hover {
+  text-decoration: underline;
 }
 
 .dashboard-settings {
