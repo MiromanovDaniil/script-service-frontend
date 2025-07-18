@@ -1,6 +1,6 @@
 # Script Service Frontend
 
-<img width="1500" height="800" alt="image" src="https://github.com/user-attachments/assets/8b944f1c-4591-4cdf-9c7b-f1df2fda0342" />
+<img width="2000" height="1000" alt="image" src="https://github.com/user-attachments/assets/8acca466-cfdd-4b58-b5e1-3c1d7f3f6783" />
 
 A beautiful Vue 3 application for creating and editing interactive stories.  It lets you organise games, scenes and scripts while communicating with a backend service to generate content.
 
