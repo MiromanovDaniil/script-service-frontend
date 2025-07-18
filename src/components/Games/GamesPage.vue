@@ -250,7 +250,7 @@ export default {
 
 .dashboard-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   padding: 34px 40px 20px 44px;
   background: none;
@@ -299,6 +299,7 @@ export default {
   color: #7c37a5;
   text-decoration: none;
   font-weight: 500;
+  margin-right: 10px;
 }
 
 .search-link:hover {

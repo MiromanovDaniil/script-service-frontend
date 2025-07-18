@@ -4,11 +4,21 @@
     <div class="search-filters">
       <div class="field">
         <label>Название диалога</label>
-        <input class="input" v-model="scriptName" type="text" />
+        <input
+          class="input"
+          v-model="scriptName"
+          type="text"
+          placeholder="Введите часть названия"
+        />
       </div>
       <div class="field">
         <label>Имя персонажа</label>
-        <input class="input" v-model="characterName" type="text" />
+        <input
+          class="input"
+          v-model="characterName"
+          type="text"
+          placeholder="Например, Геральт"
+        />
       </div>
       <div class="field">
         <label>Тип персонажа</label>
@@ -20,7 +30,12 @@
       </div>
       <div class="field">
         <label>Профессия</label>
-        <input class="input" v-model="profession" type="text" />
+        <input
+          class="input"
+          v-model="profession"
+          type="text"
+          placeholder="Алхимик, воин..."
+        />
       </div>
     </div>
 
@@ -81,20 +96,33 @@ export default {
 
 <style scoped>
 .search-page {
-  padding: 1rem;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 .search-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  align-items: end;
 }
 .field {
   display: flex;
   flex-direction: column;
+  font-size: 0.95rem;
+  color: #6f36a5;
 }
 .result-item {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff1ff;
+  box-shadow: 0 2px 4px #dec8f466;
+}
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 </style>
