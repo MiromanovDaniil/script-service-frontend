@@ -6,6 +6,8 @@ const defaultState = {
   selectedGameId: null,
   selectedSceneId: null,
   selectedScriptId: null,
+  sceneTemplates: [],
+  scriptTemplates: [],
   token: null,
   user: {
     firstName: '',
@@ -24,6 +26,8 @@ function load() {
         ...defaultState,
         ...parsed,
         user: { ...defaultState.user, ...(parsed.user || {}) },
+        sceneTemplates: parsed.sceneTemplates || [],
+        scriptTemplates: parsed.scriptTemplates || [],
       }
     } catch (e) {
       console.error('failed to parse state', e)
@@ -52,4 +56,23 @@ function updateUser(data) {
   saveState()
 }
 
-export { state, defaultState, saveState, setToken, clearToken, updateUser }
+function addSceneTemplate(template) {
+  state.sceneTemplates.push(template)
+  saveState()
+}
+
+function addScriptTemplate(template) {
+  state.scriptTemplates.push(template)
+  saveState()
+}
+
+export {
+  state,
+  defaultState,
+  saveState,
+  setToken,
+  clearToken,
+  updateUser,
+  addSceneTemplate,
+  addScriptTemplate,
+}

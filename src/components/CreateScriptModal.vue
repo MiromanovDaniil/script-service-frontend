@@ -3,7 +3,7 @@ import Scrollview from '@/components/Scrollview.vue'
 import CharacterItem from '@/components/CharacterItem.vue'
 import PlayerGetsSettings from '@/components/PlayerGetsSettings.vue'
 import CharacterSelect from '@/components/CharacterSelect.vue'
-import { state } from '@/store'
+import { state, addScriptTemplate } from '@/store'
 
 export default {
   name: 'CreateScriptModal',
@@ -26,6 +26,7 @@ export default {
       itemData: {},
       infoData: {},
       additional: '',
+      templateId: null,
       fieldsToValidate: ['name', 'main_character', 'npc', 'description'],
       errors: {
         name: false,
@@ -43,6 +44,15 @@ export default {
       if (!this.scene) return []
       const game = state.games.find((g) => g.id === state.selectedGameId)
       return game ? game.characters.filter((c) => this.scene.characters.includes(c.id)) : []
+    },
+    templates() {
+      return state.scriptTemplates
+    },
+  },
+  watch: {
+    templateId(val) {
+      const tpl = state.scriptTemplates.find((t) => t.id === val)
+      this.applyTemplate(tpl)
     },
   },
   methods: {
@@ -99,12 +109,58 @@ export default {
     mainCharacterEdited() {
       this.main_character = this.$refs.main_char.character
     },
+    applyTemplate(tpl) {
+      if (!tpl) return
+      this.name = tpl.name || ''
+      this.answers_from_m = tpl.answers_from_m
+      this.answers_to_m = tpl.answers_to_m
+      this.answers_from_n = tpl.answers_from_n
+      this.answers_to_n = tpl.answers_to_n
+      this.main_character = tpl.main_character || {}
+      this.to_npc_relations = tpl.to_npc_relations
+      this.npc = tpl.npc || {}
+      this.to_main_character_relations = tpl.to_main_character_relations
+      this.description = tpl.description || ''
+      this.itemData = tpl.itemData || {}
+      this.infoData = tpl.infoData || {}
+      this.additional = tpl.additional || ''
+    },
+    saveTemplate() {
+      const tpl = {
+        id: Date.now().toString(),
+        name: this.name,
+        answers_from_m: this.answers_from_m,
+        answers_to_m: this.answers_to_m,
+        answers_from_n: this.answers_from_n,
+        answers_to_n: this.answers_to_n,
+        main_character: this.main_character,
+        to_npc_relations: this.to_npc_relations,
+        npc: this.npc,
+        to_main_character_relations: this.to_main_character_relations,
+        description: this.description,
+        itemData: this.itemData,
+        infoData: this.infoData,
+        additional: this.additional,
+      }
+      addScriptTemplate(tpl)
+      this.templateId = tpl.id
+    },
   },
 }
 </script>
 
 <template>
   <div class="create-script-modal-container">
+    <div class="template-controls">
+      <label>Шаблон</label>
+      <select class="input" v-model="templateId">
+        <option :value="null">Не использовать</option>
+        <option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">
+          {{ tpl.name }}
+        </option>
+      </select>
+      <button type="button" class="btn" @click="saveTemplate">Сохранить как шаблон</button>
+    </div>
     <div class="create-script-modal-cell create-script-modal-name">
       <h2 class="create-script-modal-h2 create-script-modal-name-text">Название</h2>
       <div class="input-wrapper">
@@ -303,5 +359,11 @@ export default {
 .input-wrapper {
   display: flex;
   flex-direction: column;
+}
+.template-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 </style>

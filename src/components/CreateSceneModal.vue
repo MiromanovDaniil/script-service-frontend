@@ -1,7 +1,7 @@
 ﻿<script lang="ts">
 import CharacterItem from '@/components/CharacterItem.vue'
 import Scrollview from '@/components/Scrollview.vue'
-import { state } from './../store'
+import { state, addSceneTemplate } from './../store'
 
 export default {
   name: 'CreateScriptModal',
@@ -14,6 +14,7 @@ export default {
       name: '',
       characters: [],
       description: '',
+      templateId: null,
       fieldsToValidate: ['name', 'description', 'characters'],
       errors: {
         name: false,
@@ -35,11 +36,18 @@ export default {
         }
       },
     },
+    templateId(val) {
+      const tpl = state.sceneTemplates.find((t) => t.id === val)
+      this.applyTemplate(tpl)
+    },
   },
   computed: {
     charactersList() {
       const game = state.games.find((g) => g.id === state.selectedGameId)
       return game ? game.characters : []
+    },
+    templates() {
+      return state.sceneTemplates
     },
   },
   methods: {
@@ -78,12 +86,38 @@ export default {
         this.errors[field] = false
       }
     },
+    applyTemplate(tpl) {
+      if (!tpl) return
+      this.name = tpl.name || ''
+      this.description = tpl.description || ''
+      this.characters = tpl.characters ? [...tpl.characters] : []
+    },
+    saveTemplate() {
+      const tpl = {
+        id: Date.now().toString(),
+        name: this.name,
+        characters: [...this.characters],
+        description: this.description,
+      }
+      addSceneTemplate(tpl)
+      this.templateId = tpl.id
+    },
   },
 }
 </script>
 
 <template>
   <div class="create-scene-modal-container">
+    <div class="template-controls">
+      <label>Шаблон</label>
+      <select class="input" v-model="templateId">
+        <option :value="null">Не использовать</option>
+        <option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">
+          {{ tpl.name }}
+        </option>
+      </select>
+      <button type="button" class="btn" @click="saveTemplate">Сохранить как шаблон</button>
+    </div>
     <div class="create-scene-modal-cell create-scene-modal-name">
       <h2 class="create-scene-modal-h2 create-scene-modal-name-text">Название</h2>
       <div class="input-wrapper">
@@ -201,5 +235,11 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 4px 0;
+}
+.template-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 </style>
