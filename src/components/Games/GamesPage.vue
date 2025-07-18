@@ -15,6 +15,11 @@
           <path d="M13 8v5l4 2" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
         </svg>
       </button>
+      <router-link to="/stats" class="dashboard-stats" :title="$t('stats.title')">
+        <svg width="26" height="26" fill="none">
+          <path d="M6 18V10M12 18V6M18 18v-4" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </router-link>
     </header>
 
     <!-- Cards grid -->
@@ -238,7 +243,7 @@ export default {
 
 .dashboard-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   padding: 34px 40px 20px 44px;
   background: none;
@@ -293,6 +298,20 @@ export default {
   margin-right: 5px;
 }
 .dashboard-settings:hover {
+  background: #ede1ff;
+}
+.dashboard-stats {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  padding: 7px;
+  transition: background 0.16s;
+  text-decoration: none;
+}
+.dashboard-stats:hover {
   background: #ede1ff;
 }
 

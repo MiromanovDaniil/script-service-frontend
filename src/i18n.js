@@ -6,6 +6,9 @@ const messages = {
       total: 'Total games',
       create: 'Create game'
     },
+    stats: {
+      title: 'Statistics'
+    },
     settings: {
       title: 'Settings',
       darkTheme: 'Dark theme',
@@ -33,6 +36,9 @@ const messages = {
     games: {
       total: 'Всего игр',
       create: 'Создать игру'
+    },
+    stats: {
+      title: 'Статистика'
     },
     settings: {
       title: 'Настройки',
