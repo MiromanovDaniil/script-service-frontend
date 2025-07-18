@@ -5,6 +5,7 @@ export default {
   name: 'CharacterSelect',
   props: {
     characters: { type: Array, default: null },
+    val: { type: String, default: "" }
   },
   computed: {
     state() {
@@ -19,7 +20,7 @@ export default {
   },
   data() {
     return {
-      character: '',
+      character: this.val,
       error: false,
     }
   },

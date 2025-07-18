@@ -3,11 +3,6 @@
     <div class="modal-window">
       <!-- Кнопки удалить и закрыть -->
       <div class="modal-actions">
-        <button class="icon-btn" @click="remove" v-if="showDelete">
-          <svg width="28" height="28" fill="none">
-            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />
-          </svg>
-        </button>
         <button class="icon-btn" @click="close">
           <svg width="28" height="28" fill="none">
             <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />

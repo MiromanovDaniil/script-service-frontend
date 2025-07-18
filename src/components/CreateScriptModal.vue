@@ -10,22 +10,24 @@ export default {
   components: { CharacterSelect, CharacterItem, Scrollview, PlayerGetsSettings },
   props: {
     scene: { type: Object, default: null },
+    edit: { type: String, default: "false"},
+    script: { type: Object, default: null }
   },
   data() {
     return {
-      name: '',
-      answers_from_m: 1,
-      answers_to_m: 1,
-      answers_from_n: 1,
-      answers_to_n: 1,
-      main_character: {},
-      to_npc_relations: 'не знаком',
-      npc: {},
-      to_main_character_relations: 'не знаком',
-      description: '',
-      itemData: {},
-      infoData: {},
-      additional: '',
+      name: this.edit === 'false' ? "" : this.script?.name,
+      answers_from_m: this.edit === 'false' ? 1 : this.script?.answers_from_m,
+      answers_to_m: this.edit === 'false' ? 1 : this.script?.answers_to_m,
+      answers_from_n: this.edit === 'false' ? 1 : this.script?.answers_from_n,
+      answers_to_n: this.edit === 'false' ? 1 : this.script?.answers_to_n,
+      main_character: this.edit === 'false' ? "" : this.script?.main_character,
+      to_npc_relations: this.edit === 'false' ? 'не знаком' : this.script?.to_npc_relations,
+      npc: this.edit === 'false' ? "" : this.script?.npc,
+      to_main_character_relations: this.edit === 'false' ? 'не знаком' : this.script?.to_main_character_relations,
+      description: this.edit === 'false' ? '' : this.script?.description,
+      itemData: this.edit === 'false' ? {} : this.script?.itemData,
+      infoData: this.edit === 'false' ? {} : this.script?.infoData,
+      additional: this.edit === 'false' ? '' : this.script?.additional,
       fieldsToValidate: ['name', 'main_character', 'npc', 'description'],
       errors: {
         name: false,
@@ -175,6 +177,7 @@ export default {
         ref="main_char"
         :characters="availableCharacters"
         @edited="mainCharacterEdited"
+        :val="main_character"
         :class="{ error: this.errors.main_character }"
       />
       <span class="error-label" v-if="this.errors.main_character"
@@ -198,6 +201,7 @@ export default {
         ref="npc"
         :characters="availableCharacters"
         @edited="npcEdited"
+        :val="npc"
         :class="{ error: this.errors.npc }"
       />
       <span class="error-label" v-if="this.errors.npc">Это поле обязательно для заполнения</span>
@@ -227,13 +231,14 @@ export default {
       >
     </div>
     <div class="create-script-modal-cell create-script-modal-getting-item">
-      <PlayerGetsSettings :checkbox="'предмет'" :input="'Предмет'" ref="playerGetsSettingsItem" />
+      <PlayerGetsSettings :checkbox="'предмет'" :input="'Предмет'" ref="playerGetsSettingsItem" :val="itemData" />
     </div>
     <div class="create-script-modal-cell create-script-modal-getting-info">
       <PlayerGetsSettings
         :checkbox="'информацию'"
         :input="'Информация'"
         ref="playerGetsSettingsInfo"
+        :val="infoData"
       />
     </div>
     <div class="create-script-modal-cell create-script-modal-additional">

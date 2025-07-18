@@ -2,7 +2,7 @@
 
 export default {
   name: "Checkbox",
-  props: ['id', 'label', 'modelValue'],
+  props: ['id', 'label', 'modelValue', 'value'],
   emits: ['update:modelValue', 'onChange'],
   methods: {
     handleChange(e) {
@@ -18,7 +18,7 @@ export default {
     <input
         type="checkbox"
         :id="id"
-        :checked="modelValue"
+        :checked="value"
         @change="handleChange"
         class="checkbox-input"
     />
