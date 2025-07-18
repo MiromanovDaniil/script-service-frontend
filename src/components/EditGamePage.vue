@@ -16,7 +16,7 @@ import { scene } from '@/types.js'
 export default {
   name: 'EditGamePage',
   computed: {
-    state() {
+    stateLoc() {
       return state
     },
   },
@@ -74,6 +74,9 @@ export default {
       this.setCreateScriptModalState(true)
       this.createScriptGameId = state.selectedGameId
       this.createScriptSceneId = scene
+      this.scriptEdit = "false";
+      this.scriptToEdit = null;
+      this.scriptEditScene = scene;
     },
     addScene() {
       this.sceneToEdit = null
@@ -88,6 +91,20 @@ export default {
       game.scenes = game.scenes.filter((s) => s.id !== scene.id)
       saveState()
     },
+    deleteScript(script, scene) {
+      const game = state.games[state.games.findIndex((g) => g.id === state.selectedGameId)]
+      const sc = game.scenes[game.scenes.findIndex((s) => s.id === scene.id)];
+      sc.scripts = sc.scripts.filter(s => s.id !== script.id)
+      saveState();
+    },
+    editScript(script, scene) {
+      this.setCreateScriptModalState(true)
+      this.createScriptGameId = state.selectedGameId
+      this.createScriptSceneId = scene.id
+      this.scriptEdit = script.id;
+      this.scriptToEdit = script;
+      this.scriptEditScene = scene;
+    },
     saveScript() {
       if (this.$refs.child.validate()) {
         let child = this.$refs.child
@@ -95,9 +112,8 @@ export default {
         let sceneId = this.createScriptSceneId
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
-        let id = Date.now().toString()
         let dialog = {
-          id: id,
+          id: this.scriptToEdit === "false" ? Date.now().toString() : this.scriptToEdit.id,
           name: child.name,
           answers_from_m: child.answers_from_m,
           answers_to_m: child.answers_to_m,
@@ -109,13 +125,20 @@ export default {
           to_main_character_relations: child.to_main_character_relations,
           description: child.description,
           itemData: child.itemData,
-          infoData: child.itemData,
+          infoData: child.infoData,
           additional: child.additional,
           result: {},
         }
-        let scene = scenes[scenes.findIndex((gameId) => gameId === this.createScriptSceneId)]
-        scene.scripts.push(dialog)
+        let scene = scenes[scenes.findIndex((gameId) => gameId.id == this.createScriptSceneId)]
         this.setCreateScriptModalState(false)
+        if (this.scriptToEdit === "false"){
+          scene.scripts.push(dialog)
+        }
+        else {
+          scene.scripts[scene.scripts.findIndex(s => s.id == this.scriptToEdit.id)] = dialog;
+          saveState();
+          return
+        }
 
         let goals = []
         if (dialog.infoData.gets) {
@@ -127,7 +150,7 @@ export default {
         }
         if (dialog.itemData.gets) {
           goals.push({
-            type: 'поолучение предмета',
+            type: 'получение предмета',
             object: dialog.itemData.name,
             condition: dialog.itemData.condition,
           })
@@ -156,7 +179,7 @@ export default {
             (response) =>
               (scenes[
                 scenes.findIndex((gameId) => gameId === this.createScriptSceneId)
-              ].scripts.find((s) => s.id == id).result = response),
+              ].scripts.find((s) => s.id == dialog.id).result = response),
           )
           .catch((error) => console.error('Ошибка:', error))
       }
@@ -204,7 +227,9 @@ export default {
       game: null,
       answerLoadingModalOpened: false,
       createCharacterModalOpened: false,
-
+      scriptEdit: 'false',
+      scriptToEdit: null,
+      scriptEditScene: null,
       sceneToEdit: null,
     }
   },
@@ -249,26 +274,28 @@ export default {
       @addScript="addScript"
       @editScene="editScene"
       @deleteScene="deleteScene"
+      @editScript="editScript"
+      @deleteScript="deleteScript"
     />
     <MainView
-      v-if="!(state.selectedSceneId === null || state.selectedScriptId === null)"
+      v-if="!(stateLoc.selectedSceneId === null || stateLoc.selectedScriptId === null)"
       @createScene="addScene"
       @createScript="addScript"
     />
     <span v-else>Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
-      :header="'Создать диалог'"
+      :header="'Диалог'"
       :show-buttons="true"
       @closeModal="setCreateScriptModalState"
       @validate-request="saveScript"
     >
-      <CreateScriptModal ref="child" :scene="createScriptSceneId" />
+      <CreateScriptModal ref="child" :edit="scriptEdit" :script="scriptToEdit" :scene="scriptEditScene" />
     </ModalWindow>
 
     <ModalWindow
       v-if="createSceneModalOpened"
-      :header="'Создать сцену'"
+      :header="'Сцена'"
       :show-buttons="true"
       @closeModal="setCreateSceneModalState"
       @validate-request="saveScene"

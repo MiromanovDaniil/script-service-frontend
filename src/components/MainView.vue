@@ -1,12 +1,8 @@
 ﻿<template>
   <div class="scenario-view"
   >
-    <input v-model="scenario.name" class="scenario-name" placeholder="Название диалога" />
-    <textarea
-      v-model="scenario.description"
-      class="scenario-description"
-      placeholder="Краткое описание диалога"
-    ></textarea>
+    <div class="scenario-name" placeholder="Название диалога">{{scenario.name}}</div>
+    <div class="scenario-description" placeholder="Краткое описание диалога">{{ scenario.description }}</div>
 
     <button class="btn" @click="saveScript">Сохранить</button>
 

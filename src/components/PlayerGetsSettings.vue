@@ -2,7 +2,7 @@
 import Checkbox from "@/components/Checkbox.vue";
 export default {
   name: "PlayerGetsSettings",
-  props: ['checkbox', 'input'],
+  props: ['checkbox', 'input', 'val'],
   components: {
     Checkbox
   },
@@ -60,9 +60,9 @@ export default {
   },
   data(){
     return {
-      gets: false,
-      name: '',
-      condition: '',
+      gets: this.val?.gets,
+      name: this.val?.name,
+      condition: this.val?.condition,
       fieldsToValidate: ['name', 'condition'],
       errors: {
         name: false,
