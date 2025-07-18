@@ -4,6 +4,7 @@
       <div v-for="note in notes" :key="note.id" class="note">
         <span class="msg">{{ note.message }}</span>
         <button class="close" @click="remove(note.id)">×</button>
+        <div class="bar" :style="{ animationDuration: note.timeout + 'ms' }"></div>
       </div>
     </transition-group>
   </div>
@@ -36,14 +37,16 @@ export default {
   gap: 0.5rem;
 }
 .note {
-  background: #ecfdf5;
-  border: 1px solid #10b981;
-  color: #065f46;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border-left: 4px solid #10b981;
+  color: #064e3b;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 .msg {
   flex: 1;
@@ -53,6 +56,27 @@ export default {
   border: none;
   cursor: pointer;
   font-size: 1rem;
+}
+
+.bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #10b981;
+  width: 100%;
+  animation-name: shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
 }
 
 .fade-enter-active,

@@ -4,7 +4,12 @@ const notifications = reactive([])
 
 function notify(message, timeout = 3000) {
   const id = Date.now()
-  notifications.push({ message, time: new Date().toISOString(), id })
+  notifications.push({
+    message,
+    time: new Date().toISOString(),
+    id,
+    timeout,
+  })
   if (timeout > 0) {
     setTimeout(() => remove(id), timeout)
   }
