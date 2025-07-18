@@ -84,13 +84,17 @@ body {
 }
 .input {
   background-color: #f7f0ff;
-  border: #30015f 1px solid;
   border-radius: 10px;
   height: fit-content;
   width: 100%;
+  border: 1px solid #d1d5db;
   padding: 8px;
   box-sizing: border-box;
   color: #30015f; 
+}
+
+.input:focus {
+  border: #30015f 1px solid;
 }
 
 .icon-with-anim {

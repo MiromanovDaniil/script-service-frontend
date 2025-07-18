@@ -1,5 +1,5 @@
 ﻿<script>
-import { state } from "@/store";
+import { saveState, state } from "@/store";
 import { script } from "../types";
 
 export default {
@@ -33,6 +33,7 @@ export default {
       openScript() {
         state.selectedSceneId = this.scene.id;
         state.selectedScriptId = this.script.id;
+        saveState();
       },
     showContextMenu(event, id) {
       this.menuX = event.clientX;

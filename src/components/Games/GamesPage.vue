@@ -108,6 +108,7 @@ if (route.name === 'main') {
   state.selectedGameId = null
   state.selectedSceneId = null
   state.selectedSceneId = null
+  saveState();
 }
 </script>
 

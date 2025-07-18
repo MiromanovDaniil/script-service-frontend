@@ -185,7 +185,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { state, saveState } from '@/store'
 import notifications from '@/notifications'
 import { mount } from '@vue/test-utils'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
@@ -202,7 +202,8 @@ function playSpeech(text: string) {
   window.speechSynthesis.speak(utterance);
 }
 
-const route = useRoute()
+const route = useRoute();
+const router = useRouter();
 const emit = defineEmits(['createScene'])
 
 const editingNode = ref<GraphNode | null>(null);
@@ -589,69 +590,74 @@ function reloadGraph() {
     if (scene) {
       const script = scene.scripts.find(s => s.id === state.selectedScriptId);
       if (script) {
+        // Объявляем loadedData здесь
         let loadedData: GraphNode[] = [];
-    
-    if (Array.isArray(script.result?.data)) {
-      loadedData = script.result.data.map(node => ({
-        ...node,
-        to: node.to ? node.to.map(edge => ({ 
-          id: edge.id, 
-          line: edge.line || '' 
-        })) : [],
-        meta: node.meta || {}
-      }));
+
+        if (Array.isArray(script.result?.data)) {
+          // Заполняем данными
+          loadedData = script.result.data.map(node => ({
+            ...node,
+            to: node.to ? node.to.map(edge => ({ 
+              id: edge.id, 
+              line: edge.line || '' 
+            })) : [],
+            meta: node.meta || {}
+          }));
+        }
+
+        // Если данных нет - создаем корневой узел
+        if (loadedData.length === 0) {
+          loadedData = [{
+            id: 1,
+            line: 'Начало',
+            info: '',
+            to: [],
+            meta: {}
+          }];
+        }
+
+        // Используем loadedData здесь
+        scenario.value = {
+          name: script.name || 'Новый диалог',
+          description: script.description || '',
+          data: loadedData
+        };
+
+        currentRoot.value = scenario.value.data[0];
+        layoutTree();
+        nextTick(() => {
+          layoutTree();
+          
+          // Центрируем на весь граф
+          let minX = Infinity, maxX = -Infinity;
+          let minY = Infinity, maxY = -Infinity;
+
+          flatNodes.value.forEach(node => {
+            const x = node.meta?.x || 0;
+            const y = node.meta?.y || 0;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          });
+
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          
+          animateCenterTo(centerX, centerY);
+        });
+      } else {
+        state.selectedSceneId = null;
+        state.selectedScriptId = null;
+        saveState();
+      }
+    } else {
+      state.selectedSceneId = null;
+      state.selectedScriptId = null;
+      saveState();
     }
-
-    if (script?.result?.data) {
-      scenario.value.data = script.result.data.map(node => ({
-        ...node,
-        to: node.to || [], // Гарантируем, что to будет массивом
-        meta: node.meta || {}
-      }));
-    }
-
-    // Если данных нет - создаем корневой узел
-    if (loadedData.length === 0) {
-      loadedData = [{
-        id: 1,
-        line: 'Начало',
-        info: '',
-        to: [],
-        meta: {}
-      }];
-    }
-
-    scenario.value = {
-      name: script.name || 'Новый диалог',
-      description: script.description || '',
-      data: loadedData
-    };
-
-    currentRoot.value = scenario.value.data[0];
-    layoutTree();
-    nextTick(() => {
-      layoutTree();
-      
-      // Центрируем на весь граф
-      let minX = Infinity, maxX = -Infinity;
-      let minY = Infinity, maxY = -Infinity;
-
-      flatNodes.value.forEach(node => {
-        const x = node.meta?.x || 0;
-        const y = node.meta?.y || 0;
-        minX = Math.min(minX, x);
-        maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y);
-        maxY = Math.max(maxY, y);
-      });
-
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      
-      animateCenterTo(centerX, centerY);
-    });
-  }
-    }
+  } else {
+    router.push('/');
   }
 }
 
@@ -945,6 +951,10 @@ function findEdgeIndex(line: Line): number {
   
   return node.to.findIndex(edge => edge.id === targetNode.id);
 }
+
+defineExpose({
+  reloadGraph
+});
 
 </script>
 

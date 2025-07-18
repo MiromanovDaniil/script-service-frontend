@@ -10,7 +10,7 @@ import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
-import { submitDialogData } from '../api/api'
+import { submitData } from '../../api/api'
 import { scene } from '@/types.js'
 import notifications from '@/notifications'
 
@@ -175,15 +175,28 @@ export default {
           context: dialog.description,
           goals: goals,
         }
-        submitDialogData(dialogData)
+        submitData(dialogData, "generate")
           .then(
             (response) =>
-              (scenes[
-                scenes.findIndex((gameId) => gameId === this.createScriptSceneId)
-              ].scripts.find((s) => s.id == dialog.id).result = response),
+              {
+                if(response.error){
+                  throw response.error.data;
+                }
+                scenes[scenes.findIndex((gameId) => gameId.id === this.createScriptSceneId)].scripts.find((s) => s.id == dialog.id).result = response
+                saveState();
+                
+              },
           )
           .catch((error) => console.error('Ошибка:', error))
+        state.selectedSceneId = this.createScriptSceneId;
+        state.selectedScriptId = dialog.id
+        this.$nextTick(() => {
+              if (this.$refs.graph) {
+                this.$refs.graph.reloadGraph();
+              }
+            });
       }
+      
       saveState()
       notifications.notify('Script saved')
     },
@@ -282,6 +295,7 @@ export default {
     />
     <MainView
       v-if="!(stateLoc.selectedSceneId === null || stateLoc.selectedScriptId === null)"
+      ref="graph"
       @createScene="addScene"
       @createScript="addScript"
     />
