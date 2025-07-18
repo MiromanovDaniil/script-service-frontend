@@ -73,7 +73,7 @@ export default {
     addScript(scene) {
       this.setCreateScriptModalState(true)
       this.createScriptGameId = state.selectedGameId
-      this.createScriptSceneId = scene
+      this.createScriptSceneId = scene.id
       this.scriptEdit = "false";
       this.scriptToEdit = null;
       this.scriptEditScene = scene;
@@ -113,7 +113,7 @@ export default {
         let game = state.games[state.games.findIndex((game) => game.id === this.createScriptGameId)]
         let scenes = game.scenes
         let dialog = {
-          id: this.scriptToEdit === "false" ? Date.now().toString() : this.scriptToEdit.id,
+          id: this.scriptEdit === "false" ? Date.now().toString() : this.scriptToEdit.id,
           name: child.name,
           answers_from_m: child.answers_from_m,
           answers_to_m: child.answers_to_m,
@@ -131,7 +131,7 @@ export default {
         }
         let scene = scenes[scenes.findIndex((gameId) => gameId.id == this.createScriptSceneId)]
         this.setCreateScriptModalState(false)
-        if (this.scriptToEdit === "false"){
+        if (this.scriptEdit === "false"){
           scene.scripts.push(dialog)
         }
         else {
