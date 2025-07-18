@@ -56,6 +56,13 @@
               </select>
             </label>
           </div>
+          <div class="setting-item">
+            <button @click="exportJson">Экспорт JSON</button>
+            <button @click="exportPdf">Экспорт PDF</button>
+          </div>
+          <div class="setting-item">
+            <input type="file" accept="application/json" @change="importJson" />
+          </div>
         </div>
       </aside>
     </div>
@@ -81,7 +88,17 @@
       ref="charsModal"
     />
 
-    <ModalWindow  v-if="isCharEditModalOpened" @closeModal="isCharEditModalOpened = false" :showButtons="true" :header="'Персонаж'" @validate-request="save"><CreateCharacterModal :edit="editChar" :char="selectedGame.characters.find(c => c.id == editChar)" ref="createChar"/></ModalWindow>
+    <ModalWindow
+      v-if="isCharEditModalOpened"
+      @closeModal="isCharEditModalOpened = false"
+      :showButtons="true"
+      :header="'Персонаж'"
+      @validate-request="save"
+      ><CreateCharacterModal
+        :edit="editChar"
+        :char="selectedGame.characters.find((c) => c.id == editChar)"
+        ref="createChar"
+    /></ModalWindow>
   </div>
 </template>
 
@@ -103,6 +120,7 @@ import { state, saveState } from '@/store'
 import CharactersModal from '../CharacterViewModal.vue'
 import ModalWindow from '../ModalWindow.vue'
 import CreateCharacterModal from '../CreateCharacterModal.vue'
+import { jsPDF } from 'jspdf'
 
 export default {
   components: { GameItem, CreateGameModal, CharactersModal, ModalWindow, CreateCharacterModal },
@@ -117,7 +135,7 @@ export default {
       selectedGame: null,
       selectedGameCharacters: [],
       isCharEditModalOpened: false,
-      editChar: ""
+      editChar: '',
     }
   },
   computed: {
@@ -142,12 +160,12 @@ export default {
   },
   methods: {
     addChar() {
-      this.isCharEditModalOpened = true;
-      this.editChar = "";
+      this.isCharEditModalOpened = true
+      this.editChar = ''
     },
     editCharF(id) {
-      this.isCharEditModalOpened = true;
-      this.editChar = id;
+      this.isCharEditModalOpened = true
+      this.editChar = id
     },
     openCreateModal() {
       this.editingGame = null
@@ -201,26 +219,73 @@ export default {
       saveState()
     },
     save() {
-      let ch = this.$refs.createChar;
-      if(this.$refs.createChar.validate()) {
+      let ch = this.$refs.createChar
+      if (this.$refs.createChar.validate()) {
         let res = {
-          "id": Date.now().toString(),
-          "name": ch.name,
-          "profession": ch.job,
-          "talk_style": ch.speechStyle,
-          "type": ch.type,
-          "traits": ch.mood,
-          "look": ch.appearance,
-          "extra": ch.description
-        };
-        if(ch.edit){
-          this.$refs.charsModal.localChars[this.$refs.charsModal.localChars.findIndex(c => c.id == ch.char.id)] = res;
+          id: Date.now().toString(),
+          name: ch.name,
+          profession: ch.job,
+          talk_style: ch.speechStyle,
+          type: ch.type,
+          traits: ch.mood,
+          look: ch.appearance,
+          extra: ch.description,
         }
-        else {
-          this.$refs.charsModal.localChars.push(res);
+        if (ch.edit) {
+          this.$refs.charsModal.localChars[
+            this.$refs.charsModal.localChars.findIndex((c) => c.id == ch.char.id)
+          ] = res
+        } else {
+          this.$refs.charsModal.localChars.push(res)
         }
-        this.isCharEditModalOpened = false;
+        this.isCharEditModalOpened = false
       }
+    },
+    exportJson() {
+      const data = JSON.stringify(state.games, null, 2)
+      const blob = new Blob([data], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'scenarios.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+    importJson(e) {
+      const file = e.target.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result)
+          if (Array.isArray(parsed)) {
+            state.games = parsed
+            saveState()
+          }
+        } catch (err) {
+          console.error('Failed to import scenarios', err)
+        }
+      }
+      reader.readAsText(file)
+      e.target.value = null
+    },
+    exportPdf() {
+      const doc = new jsPDF()
+      let y = 10
+      state.games.forEach((g) => {
+        doc.text(`Game: ${g.name}`, 10, y)
+        y += 10
+        g.scenes.forEach((s) => {
+          doc.text(` Scene: ${s.name}`, 10, y)
+          y += 10
+          s.scripts.forEach((sc) => {
+            doc.text(`  Script: ${sc.name}`, 10, y)
+            y += 10
+          })
+        })
+        y += 10
+      })
+      doc.save('scenarios.pdf')
     },
   },
 }
