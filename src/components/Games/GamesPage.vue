@@ -61,6 +61,16 @@
               </select>
             </label>
           </div>
+          <div class="setting-item">
+            <label>
+              <span>Голос озвучки</span>
+              <select v-model="selectedVoiceName">
+                <option v-for="v in voices" :key="v.name" :value="v.name">
+                  {{ v.name }} ({{ v.lang }})
+                </option>
+              </select>
+            </label>
+          </div>
         </div>
       </aside>
     </div>
@@ -119,6 +129,8 @@ export default {
       showSettings: false,
       darkTheme: false,
       language: 'ru',
+      voices: [],
+      selectedVoiceName: '',
       selectedGame: null,
       selectedGameCharacters: [],
       isCharEditModalOpened: false,
@@ -139,13 +151,29 @@ export default {
       this.$i18n.locale = val
       localStorage.setItem('locale', val)
     },
+    selectedVoiceName(val) {
+      localStorage.setItem('voiceName', val)
+    },
   },
   mounted() {
     this.darkTheme = localStorage.getItem('darkTheme') === '1'
     document.body.classList.toggle('dark-theme', this.darkTheme)
     this.language = this.$i18n.locale
+    this.selectedVoiceName = localStorage.getItem('voiceName') || ''
+    this.updateVoices()
+    window.speechSynthesis.addEventListener('voiceschanged', this.updateVoices)
+  },
+  beforeUnmount() {
+    window.speechSynthesis.removeEventListener('voiceschanged', this.updateVoices)
   },
   methods: {
+    updateVoices() {
+      this.voices = window.speechSynthesis.getVoices()
+      if (!this.selectedVoiceName && this.voices.length) {
+        const def = this.voices.find((v) => v.default) || this.voices[0]
+        this.selectedVoiceName = def?.name || ''
+      }
+    },
     addChar() {
       this.isCharEditModalOpened = true;
       this.editChar = "";
