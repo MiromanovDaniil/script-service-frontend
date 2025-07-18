@@ -185,9 +185,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { state, saveState } from '@/store'
-import { mount } from '@vue/test-utils'
 import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
