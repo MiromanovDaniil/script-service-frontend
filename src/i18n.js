@@ -19,7 +19,7 @@ const messages = {
     },
     login: {
       title: 'Login',
-      username: 'Username',
+      mail: 'Email',
       password: 'Password',
       login: 'Login',
       register: 'Register',
@@ -53,7 +53,7 @@ const messages = {
     },
     login: {
       title: 'Вход',
-      username: 'Имя пользователя',
+      mail: 'Email',
       password: 'Пароль',
       login: 'Войти',
       register: 'Регистрация',
