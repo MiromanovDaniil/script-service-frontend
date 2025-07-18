@@ -3,7 +3,7 @@ import Scrollview from '@/components/Scrollview.vue'
 import CharacterItem from '@/components/CharacterItem.vue'
 import PlayerGetsSettings from '@/components/PlayerGetsSettings.vue'
 import CharacterSelect from '@/components/CharacterSelect.vue'
-import { state, addScriptTemplate } from '@/store'
+import { state, addScriptTemplate, updateScriptTemplate, deleteScriptTemplate } from '@/store'
 
 export default {
   name: 'CreateScriptModal',
@@ -145,6 +145,30 @@ export default {
       addScriptTemplate(tpl)
       this.templateId = tpl.id
     },
+    updateTemplate() {
+      if (!this.templateId) return
+      const data = {
+        name: this.name,
+        answers_from_m: this.answers_from_m,
+        answers_to_m: this.answers_to_m,
+        answers_from_n: this.answers_from_n,
+        answers_to_n: this.answers_to_n,
+        main_character: this.main_character,
+        to_npc_relations: this.to_npc_relations,
+        npc: this.npc,
+        to_main_character_relations: this.to_main_character_relations,
+        description: this.description,
+        itemData: this.itemData,
+        infoData: this.infoData,
+        additional: this.additional,
+      }
+      updateScriptTemplate(this.templateId, data)
+    },
+    deleteTemplate() {
+      if (!this.templateId) return
+      deleteScriptTemplate(this.templateId)
+      this.templateId = null
+    },
   },
 }
 </script>
@@ -160,6 +184,8 @@ export default {
         </option>
       </select>
       <button type="button" class="btn" @click="saveTemplate">Сохранить как шаблон</button>
+      <button v-if="templateId" type="button" class="btn" @click="updateTemplate">Обновить</button>
+      <button v-if="templateId" type="button" class="btn" @click="deleteTemplate">Удалить</button>
     </div>
     <div class="create-script-modal-cell create-script-modal-name">
       <h2 class="create-script-modal-h2 create-script-modal-name-text">Название</h2>

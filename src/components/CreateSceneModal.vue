@@ -1,7 +1,7 @@
 ﻿<script lang="ts">
 import CharacterItem from '@/components/CharacterItem.vue'
 import Scrollview from '@/components/Scrollview.vue'
-import { state, addSceneTemplate } from './../store'
+import { state, addSceneTemplate, updateSceneTemplate, deleteSceneTemplate } from './../store'
 
 export default {
   name: 'CreateScriptModal',
@@ -102,6 +102,20 @@ export default {
       addSceneTemplate(tpl)
       this.templateId = tpl.id
     },
+    updateTemplate() {
+      if (!this.templateId) return
+      const data = {
+        name: this.name,
+        characters: [...this.characters],
+        description: this.description,
+      }
+      updateSceneTemplate(this.templateId, data)
+    },
+    deleteTemplate() {
+      if (!this.templateId) return
+      deleteSceneTemplate(this.templateId)
+      this.templateId = null
+    },
   },
 }
 </script>
@@ -117,6 +131,8 @@ export default {
         </option>
       </select>
       <button type="button" class="btn" @click="saveTemplate">Сохранить как шаблон</button>
+      <button v-if="templateId" type="button" class="btn" @click="updateTemplate">Обновить</button>
+      <button v-if="templateId" type="button" class="btn" @click="deleteTemplate">Удалить</button>
     </div>
     <div class="create-scene-modal-cell create-scene-modal-name">
       <h2 class="create-scene-modal-h2 create-scene-modal-name-text">Название</h2>
@@ -138,16 +154,16 @@ export default {
     </div>
     <div class="create-scene-modal-cell create-scene-modal-characters">
       <h2 class="create-scene-modal-h2">Персонажи</h2>
-    <Scrollview :w="'100%'" :h="'200px'" :class="{ error: errors.characters }">
-      <ul class="characters-list">
-        <li v-for="char of charactersList" :key="char.id" class="character-checkbox">
-          <label>
-            <input type="checkbox" :value="char.id" v-model="characters" />
-            <span>{{ char.name }}</span>
-          </label>
-        </li>
-      </ul>
-    </Scrollview>
+      <Scrollview :w="'100%'" :h="'200px'" :class="{ error: errors.characters }">
+        <ul class="characters-list">
+          <li v-for="char of charactersList" :key="char.id" class="character-checkbox">
+            <label>
+              <input type="checkbox" :value="char.id" v-model="characters" />
+              <span>{{ char.name }}</span>
+            </label>
+          </li>
+        </ul>
+      </Scrollview>
       <span class="error-label" v-if="this.errors.characters"
         >Это поле обязательно для заполнения</span
       >

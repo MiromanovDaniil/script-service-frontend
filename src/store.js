@@ -61,9 +61,41 @@ function addSceneTemplate(template) {
   saveState()
 }
 
+function updateSceneTemplate(id, data) {
+  const idx = state.sceneTemplates.findIndex((t) => t.id === id)
+  if (idx !== -1) {
+    state.sceneTemplates[idx] = { ...state.sceneTemplates[idx], ...data }
+    saveState()
+  }
+}
+
+function deleteSceneTemplate(id) {
+  const idx = state.sceneTemplates.findIndex((t) => t.id === id)
+  if (idx !== -1) {
+    state.sceneTemplates.splice(idx, 1)
+    saveState()
+  }
+}
+
 function addScriptTemplate(template) {
   state.scriptTemplates.push(template)
   saveState()
+}
+
+function updateScriptTemplate(id, data) {
+  const idx = state.scriptTemplates.findIndex((t) => t.id === id)
+  if (idx !== -1) {
+    state.scriptTemplates[idx] = { ...state.scriptTemplates[idx], ...data }
+    saveState()
+  }
+}
+
+function deleteScriptTemplate(id) {
+  const idx = state.scriptTemplates.findIndex((t) => t.id === id)
+  if (idx !== -1) {
+    state.scriptTemplates.splice(idx, 1)
+    saveState()
+  }
 }
 
 export {
@@ -75,4 +107,8 @@ export {
   updateUser,
   addSceneTemplate,
   addScriptTemplate,
+  updateSceneTemplate,
+  updateScriptTemplate,
+  deleteSceneTemplate,
+  deleteScriptTemplate,
 }
