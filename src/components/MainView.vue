@@ -146,6 +146,12 @@
     <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
   </svg>
 </button>
+<button @click="() => playSpeech(node.line)" class="icon-button" title="Прослушать">
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+    <path d="M5 9v6h4l5 5V4l-5 5H5z"/>
+    <path d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l1.06-1.06C15.33 7.6 16 9.71 16 12s-.67 4.4-2.34 5.59l-1.06-1.06A6.996 6.996 0 0 0 14.5 12z"/>
+  </svg>
+</button>
               </div>
             </div>
           </div>
@@ -186,6 +192,12 @@ import { useRoute } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
+
+function playSpeech(text: string) {
+  if (!text) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  window.speechSynthesis.speak(utterance);
+}
 
 const route = useRoute()
 const emit = defineEmits(['createScene'])
