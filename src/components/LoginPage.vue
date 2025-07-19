@@ -67,10 +67,7 @@ export default {
             logger.add('User logged in')
             notifications.notify('User logged in')
             localStorage.setItem("user_id", response.user.id);
-            toRaw(load()).then(val=>{
-              Object.assign(state, val.data);
-              this.$router.push('/')
-            })
+            this.$router.push('/')
           }
         }
       })

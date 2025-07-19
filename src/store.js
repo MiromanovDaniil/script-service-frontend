@@ -17,7 +17,7 @@ const defaultState = {
 }
 
 function load() {
-  let res = fetchData(`get/users/${localStorage.getItem('user_id')}/data`)
+  let res = fetchData(`users/get_data/${localStorage.getItem('user_id')}/data`, false)
   return res
 }
 
@@ -25,7 +25,7 @@ const state = reactive({...defaultState})
 
 function saveState() {
   let user_id = localStorage.getItem('user_id');
-  submitData({'user_id': user_id, 'data': toRaw(state)}, `users/${user_id}/data`)
+  submitData({'user_id': user_id, 'data': toRaw(state)}, `users/${user_id}/data`, false)
 }
 
 function setToken(token) {

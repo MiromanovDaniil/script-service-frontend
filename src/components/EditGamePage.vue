@@ -174,7 +174,7 @@ export default {
           context: dialog.description,
           goals: goals,
         }
-        submitData(dialogData, "generate")
+        submitData(dialogData, "generate", false)
           .then(
             (response) =>
               {
@@ -249,10 +249,6 @@ export default {
     }
   },
   mounted() {
-    if (!localStorage.getItem('scenario-data')) {
-      localStorage.setItem('scenario-data', JSON.stringify(defaultState))
-    }
-
     // Find the game
     this.game = state.games.find((g) => g.id === this.$route.params.id)
     state.selectedGameId = this.$route.params.id
