@@ -97,13 +97,15 @@ export default {
     <!-- Accordion header -->
     <div class="accordion" @click="toggle" @contextmenu.prevent="showContextMenu($event, scene.id)">
       <span class="accordion-arrow" :class="{ active: isOpen }">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </span>
       <span class="scene-title">{{ scene.name }}</span>
-      <button class="scene-btn" @click.stop="addScript" title="Добавить диалог">
-        ➕
+      <button class="scene-btn" @click.stop="addScript" title="Добавить диалог" id="scene-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 16 16" stroke="#7e22ce" stroke-width="1.2">
+  <path d="M8 4v8M4 8h8"/>
+</svg>
       </button>
     </div>
 
@@ -143,10 +145,13 @@ export default {
   cursor: pointer;
   transition: background 0.3s;
   border: none;
+  letter-spacing: normal;
 }
 
 .accordion:hover {
+  transition: all ease-in-out 0.2s;
   background: #e9d5ff;
+  letter-spacing: 1pt;
 }
 
 .accordion-arrow {
@@ -171,9 +176,15 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  color: #7e22ce;
   margin-left: 10px;
+}
+
+#scene-btn {
+  transition: all ease-in-out 0.1s;
+}
+
+#scene-btn:hover {
+  transform: scale(1.2, 1.2);
 }
 
 .custom-context-menu {

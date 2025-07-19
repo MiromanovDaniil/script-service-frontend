@@ -90,7 +90,6 @@ export default {
   border-radius: 6px;
   transition: background 0.2s ease;
 }
-
   .script-item:hover {
     background: #ffcefb;
   }
