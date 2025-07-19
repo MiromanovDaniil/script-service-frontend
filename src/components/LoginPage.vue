@@ -55,17 +55,17 @@ export default {
         "mail": this.mail,
         "password": this.password,
       } 
-      submitData(loginData, "login").then(response => {
-        if(response.error){
-          this.error = response?.data.response?.data.detail[0].msg;
+      submitData(loginData, "login", true).then(response => {
+        if(response.data){
+          this.error = response.data.detail;
           logger.add('Login failed')
           notifications.notify('Login failed')
         }
         else{
-          if (response && response.data.response.token) {
-            setToken(response.data.response.token)
+          if (response) {
             logger.add('User logged in')
             notifications.notify('User logged in')
+            localStorage.setItem("user_id", response.user.id);
             this.$router.push('/')
           }
         }

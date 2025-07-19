@@ -1,4 +1,5 @@
 ﻿import { reactive, toRaw } from 'vue'
+import { submitData, fetchData } from '../api/api'
 
 // СТРУКТУРА ДАННЫХ
 const defaultState = {
@@ -34,7 +35,8 @@ function load() {
 
 const state = reactive(load())
 function saveState() {
-  localStorage.setItem('scenario-data', JSON.stringify(toRaw(state)))
+  let user_id = localStorage.getItem('user_id');
+  submitData({'user_id': user_id, 'data': toRaw(state)}, `users/${user_id}/data`)
 }
 
 function setToken(token) {

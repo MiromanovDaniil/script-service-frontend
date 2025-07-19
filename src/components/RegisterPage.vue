@@ -74,7 +74,7 @@ export default {
       } 
       submitData(regData, "register").then(response => {
         if(response.error){
-          this.error = response.data.response.data.detail[0].msg;
+          this.error = "Не удалось войти в аккаунт";
           logger.add('Register failed');
         }
         else{
