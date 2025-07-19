@@ -268,6 +268,7 @@ export default {
   grid-template-rows: auto 1fr;
   background: linear-gradient(120deg, #e6d5ff 0%, #fff7ff 100%);
   overflow: hidden;
+  user-select: none;
 }
 
 .dashboard-header {
@@ -279,7 +280,7 @@ export default {
   font-family: inherit;
   font-size: 1.12rem;
   gap: 25px;
-  overflow-y: auto; /* Добавлена вертикальная прокрутка */
+  overflow: hidden; /* Добавлена вертикальная прокрутка */
   max-height: calc(100vh - 120px); /* Ограничение высоты для появления скролла */
   scrollbar-width: thin; /* Для Firefox */
   scrollbar-color: #c4a8f4 #f0e5ff; /* Для Firefox */
@@ -345,6 +346,7 @@ export default {
 }
 
 .games-list {
+  overflow-y: auto;
   width: 100%;
   padding: 12px 44px 42px 44px;
   display: grid;

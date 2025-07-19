@@ -4,19 +4,19 @@
           <div class="row">
             <div class="column">
               <label>Имя</label>
-              <input type="text" v-model="name" class="input" />
+              <input type="text" v-model="name" required class="input" />
         <span class="error-label" v-if="this.errors.name">Это поле обязательно для заполнения</span>
             </div>
             <div class="column">
               <label>Профессия</label>
-              <input type="text" v-model="job" class="input" />
+              <input type="text" v-model="job" required class="input" />
         <span class="error-label" v-if="this.errors.job">Это поле обязательно для заполнения</span>
             </div>
           </div>
 
           <div>
             <label>Характеристика</label>
-            <textarea v-model="description" class="textarea" rows="5"></textarea>
+            <textarea v-model="description" required class="textarea" rows="5"></textarea>
         <span class="error-label" v-if="this.errors.description">Это поле обязательно для заполнения</span>
           </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="right-column">
           <div>
             <label>Тип персонажа</label>
-            <select v-model="type" class="input">
+            <select v-model="type" required class="input">
               <option disabled value="">Выберите тип</option>
               <option value="npc">NPC</option>
               <option value="main">Главный персонаж</option>
@@ -34,19 +34,19 @@
 
           <div>
             <label>Характер</label>
-            <input type="text" v-model="mood" class="input" />
+            <input type="text" v-model="mood" required class="input" />
         <span class="error-label" v-if="this.errors.mood">Это поле обязательно для заполнения</span>
           </div>
 
           <div>
             <label>Стиль речи</label>
-            <textarea v-model="speechStyle" class="textarea" rows="3"></textarea>
+            <textarea v-model="speechStyle" required class="textarea" rows="3"></textarea>
         <span class="error-label" v-if="errors.speechStyle">Это поле обязательно для заполнения</span>
           </div>
 
           <div>
             <label>Внешний вид</label>
-            <textarea v-model="appearance" class="textarea" rows="3"></textarea>
+            <textarea v-model="appearance" required class="textarea" rows="3"></textarea>
         <span class="error-label" v-if="this.errors.appearance">Это поле обязательно для заполнения</span>
           </div>
           

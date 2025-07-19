@@ -20,14 +20,14 @@
             </div>
             <div class="field-group">
               <label class="field-label">Характеристики мира</label>
-              <textarea v-model="game.description" class="input textarea" />
+              <textarea v-model="game.description" required class="input textarea" />
             </div>
           </div>
           <!-- Правая колонка -->
           <div>
             <div class="field-group">
               <label class="field-label">Жанр</label>
-              <select v-model="game.genre" class="input">
+              <select v-model="game.genre" required class="input">
                 <option disabled value="">Выберите жанр</option>
                 <option>Приключения</option>
                 <option>Фэнтези</option>
@@ -40,7 +40,7 @@
             </div>
             <div class="field-group">
               <label class="field-label">Исторический период</label>
-              <select v-model="game.techLevel" class="input">
+              <select v-model="game.techLevel" required class="input">
                 <option disabled value="">Выберите уровень</option>
                 <option>Каменный век</option>
                 <option>Средневековье</option>
@@ -103,50 +103,56 @@ export default {
   },
   methods: {
     validate() {
-      this.resetErrors()
-      const errors = []
-
+      this.resetErrors();
+      let isValid = true;
       const fieldLabels = {
         name: 'Название',
-        answers_count: 'Количество ответов',
-        branches_count: 'Количество сюжетных веток',
-        characters: 'Персонажи',
-        description: 'Краткое содержание',
-      }
+        description: 'Характеристики мира',
+        genre: 'Жанр',
+        techLevel: 'Исторический период'
+      };
 
       for (const field of this.fieldsToValidate) {
-        const value = this.game[field]
-
-        if (typeof value === 'object') {
-          if (Object.keys(value).length === 0) {
-            this.errors[field] = true
+        const value = this.game[field];
+        
+        if (Array.isArray(value)) {
+          if (value.length === 0) {
+            this.errors[field] = true;
+            isValid = false;
           }
-        } else if (typeof value === 'string') {
+        } 
+        else if (typeof value === 'string') {
           if (!value.trim()) {
-            this.errors[field] = true
+            this.errors[field] = true;
+            isValid = false;
           }
-        } else if (value === null || value === undefined || value === 0) {
-          this.errors[field] = true
+        } 
+        else if (value === null || value === undefined) {
+          this.errors[field] = true;
+          isValid = false;
         }
+      }
 
-        return !errors.length
-      }
+      return isValid;
     },
+    
     resetErrors() {
-      for (const field in this.errors) {
-        this.errors[field] = false
+      this.errors = {};
+    },
+    
+    submit() {
+      if (!this.validate()) {
+        return; // Не сохраняем если есть ошибки
       }
+      this.$emit('save', { ...this.game })
+      this.close()
     },
     close() {
       this.$emit('close')
     },
     remove() {
       this.$emit('delete')
-    },
-    submit() {
-      this.$emit('save', { ...this.game })
-      this.close()
-    },
+    }
   },
 }
 </script>
