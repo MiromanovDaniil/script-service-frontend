@@ -2,10 +2,24 @@
 import Notifications from '@/components/Notifications.vue'
 import { toRaw } from 'vue';
 import { load, state } from './store';
+import { useRoute } from 'vue-router';
 
 export default {
   components: { Notifications },
   mounted() {
+    let route = useRoute();
+    console.log(route.path)
+    if(route.path === "/login" || route.path === "/register"){
+      console.log(1234)
+      if(localStorage.getItem("user_id")){
+        this.$router.push('/')
+      }
+    }
+    else{
+      if(!localStorage.getItem("user_id")){
+        this.$router.push('/login')
+      }
+    }
     toRaw(load()).then(val=>Object.assign(state, val.data));
   }
 }
