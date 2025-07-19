@@ -1,7 +1,13 @@
 <script>
 import Notifications from '@/components/Notifications.vue'
+import { toRaw } from 'vue';
+import { load, state } from './store';
+
 export default {
-  components: { Notifications }
+  components: { Notifications },
+  mounted() {
+    toRaw(load()).then(val=>Object.assign(state, val.data));
+  }
 }
 </script>
 

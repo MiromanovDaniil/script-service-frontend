@@ -23,7 +23,8 @@
 
 <script>
 import { submitData } from '@/../api/api'
-import { setToken } from '@/store'
+import { load, saveState, setToken, state } from '@/store'
+import { toRaw } from 'vue'
 import logger from '@/logger'
 import notifications from '@/notifications'
 
@@ -66,7 +67,10 @@ export default {
             logger.add('User logged in')
             notifications.notify('User logged in')
             localStorage.setItem("user_id", response.user.id);
-            this.$router.push('/')
+            toRaw(load()).then(val=>{
+              Object.assign(state, val.data);
+              this.$router.push('/')
+            })
           }
         }
       })

@@ -17,23 +17,12 @@ const defaultState = {
 }
 
 function load() {
-  const raw = localStorage.getItem('scenario-data')
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw)
-      return {
-        ...defaultState,
-        ...parsed,
-        user: { ...defaultState.user, ...(parsed.user || {}) },
-      }
-    } catch (e) {
-      console.error('failed to parse state', e)
-    }
-  }
-  return { ...defaultState }
+  let res = fetchData(`get/users/${localStorage.getItem('user_id')}/data`)
+  return res
 }
 
-const state = reactive(load())
+const state = reactive({...defaultState})
+
 function saveState() {
   let user_id = localStorage.getItem('user_id');
   submitData({'user_id': user_id, 'data': toRaw(state)}, `users/${user_id}/data`)
@@ -54,4 +43,4 @@ function updateUser(data) {
   saveState()
 }
 
-export { state, defaultState, saveState, setToken, clearToken, updateUser }
+export { state, defaultState, load, saveState, setToken, clearToken, updateUser }
