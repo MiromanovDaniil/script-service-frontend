@@ -1,9 +1,13 @@
 ﻿<template>
   <div id="sidebar">
-    <router-link to="/profile" class="sidebar-user">
-      <img class="user-avatar" :src="state.user.avatar || '/assets/logo.png'" alt="avatar" />
-      <span class="user-name">{{ state.user.firstName || 'username' }}</span>
-    </router-link>
+    <div class="sidebar-user">
+  <svg class="user-avatar-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7c37a5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+  </svg>
+  <span class="user-name">{{ state.user.firstName || 'username' }}</span>
+</div>
+
     <button @click="exit" class="btn">Игровая панель</button>
     <button @click="addScene" class="btn">Создать сцену</button>
     <Scenes

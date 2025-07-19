@@ -299,7 +299,7 @@ export default {
       @createScene="addScene"
       @createScript="addScript"
     />
-    <span v-else>Здесь появится открытый диалог</span>
+    <span v-else class="empty-dialog-placeholder">Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
       :header="'Диалог'"
@@ -346,4 +346,12 @@ export default {
   flex-direction: row;
   height: 97.5vh;
 }
+
+.empty-dialog-placeholder {
+  margin: 20px 30px;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #7b6a91;
+}
+
 </style>

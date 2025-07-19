@@ -3,7 +3,7 @@ import axios from 'axios'
 export const submitDialogData = async (data) => {
   try {
     const response = await axios.post(
-      'http://10.82.246.20:8005/api/generate',
+      'http://10.82.56.167:8005/api/generate',
       data,
       {
         headers: {

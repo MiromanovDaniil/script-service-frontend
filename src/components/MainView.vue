@@ -123,31 +123,32 @@
               <div class="actions">
         
 <button @click="() => addChild(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
   </svg>
 </button>
 <button @click="() => editNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
+  <svg viewBox="0 0 24 24" width="48" height="48" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
   </svg>
 </button>
 <button @click="() => deleteNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
+  <svg viewBox="0 0 24 24" width="48" height="48" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
   </svg>
 </button>
 <button @click="() => connectNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
   </svg>
 </button>
 <button @click="() => playSpeech(node.line)" class="icon-button" title="Прослушать">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M5 9v6h4l5 5V4l-5 5H5z"/>
     <path d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l1.06-1.06C15.33 7.6 16 9.71 16 12s-.67 4.4-2.34 5.59l-1.06-1.06A6.996 6.996 0 0 0 14.5 12z"/>
   </svg>
 </button>
+
               </div>
             </div>
           </div>
@@ -164,7 +165,7 @@
       @regenerate="handleNodeRegenerate"
     />
 
-    <dialog 
+   <dialog 
   v-if="showEdgeModal"
   class="edge-dialog" 
   open
@@ -174,9 +175,12 @@
   <textarea v-model="edgeText" class="edge-textarea"></textarea>
   <div class="dialog-actions">
     <button @click="closeEdgeModal">Отмена</button>
+    <button @click="deleteEdge" class="delete-button">Удалить</button>
     <button @click="saveEdgeText">Сохранить</button>
   </div>
 </dialog>
+
+
   </div>
 </template>
 
@@ -190,15 +194,38 @@ import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
 
+let isSpeaking = false;
 
 function playSpeech(text: string) {
   if (!text) return;
+
+  if (window.speechSynthesis.speaking || isSpeaking) {
+    window.speechSynthesis.cancel();
+    isSpeaking = false;
+    return;
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
+
   const storedVoiceName = localStorage.getItem('voiceName') || '';
   const voice = window.speechSynthesis
     .getVoices()
     .find((v) => v.name === storedVoiceName);
-  if (voice) utterance.voice = voice;
+
+  if (voice) {
+    utterance.voice = voice;
+  }
+
+  isSpeaking = true;
+
+  utterance.onend = () => {
+    isSpeaking = false;
+  };
+
+  utterance.onerror = () => {
+    isSpeaking = false;
+  };
+
   window.speechSynthesis.speak(utterance);
 }
 
@@ -661,6 +688,16 @@ function reloadGraph() {
   }
 }
 
+function deleteEdge() {
+  if (editingEdge.value) {
+    const { node, index } = editingEdge.value;
+    node.to.splice(index, 1);
+    closeEdgeModal();
+    layoutTree(); 
+  }
+}
+
+
 onMounted(reloadGraph);
 watch(
   () => state.selectedScriptId,
@@ -957,6 +994,7 @@ defineExpose({
 });
 
 </script>
+
 
 <style scoped>
 
@@ -1321,5 +1359,7 @@ defineExpose({
 .icon-button:hover .icon {
   fill: #6b21a8;
 }
+
+
 
 </style>
