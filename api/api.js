@@ -2,15 +2,10 @@ import axios from 'axios'
 
 // Функция для отправки данных
 export const submitData = async (data, endpoint, credentials = false) => {
+  console.log(document)
   try {
     const response = await axios.post(`http://10.82.56.167:8005/api/${endpoint}`, data, {
-      headers: credentials
-        ? {
-            'Content-Type': 'application/json',
-            // Раскомментируйте для авторизации:
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          }
-        : {
+      headers: {
             'Content-Type': 'application/json',
           },
       withCredentials: credentials,
@@ -41,12 +36,7 @@ export const submitData = async (data, endpoint, credentials = false) => {
 export const fetchData = async (endpoint, params = {}, credentials = false) => {
   try {
     const config = {
-      headers: credentials
-        ? {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          }
-        : {
+      headers: {
             'Content-Type': 'application/json',
           },
       params, // Параметры запроса
