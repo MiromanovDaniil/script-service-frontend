@@ -278,11 +278,15 @@ export default {
     toggleUserMenu() {
   this.showUserMenu = !this.showUserMenu;
 },
-logout() {
-  // Очистка состояния, перенаправление и т.д.
-  localStorage.clear();
-  state.user = {};
-  this.$router.push('/login'); // Или другая логика
+async logout() {
+  try {
+    await this.$axios.post('/api/logout');
+    localStorage.clear();
+    state.user = {};
+    this.$router.push('/login');
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
 }
 
   },
