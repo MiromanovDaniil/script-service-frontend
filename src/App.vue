@@ -11,12 +11,12 @@ export default {
     console.log(route.path)
     if(route.path === "/login" || route.path === "/register"){
       console.log(1234)
-      if(localStorage.getItem("user_id")){
+      if(sessionStorage.getItem("user_id")){
         this.$router.push('/')
       }
     }
     else{
-      if(!localStorage.getItem("user_id")){
+      if(!sessionStorage.getItem("user_id")){
         this.$router.push('/login')
       }
     }

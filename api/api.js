@@ -1,87 +1,129 @@
 import axios from 'axios'
 
+// Создаем экземпляр axios с базовыми настройками
+const api = axios.create({
+  baseURL: 'http://10.82.56.167:8005/api/',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Добавляем интерсептор для автоматической подстановки токена
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
+
+// Функция для обработки ответов
+const handleResponse = (response) => {
+  if (response.data?.error || response.data?.status === 'error') {
+    return {
+      error: true,
+      data: response.data,
+    }
+  }
+  return response.data
+}
+
+// Функция для обработки ошибок
+const handleError = (error) => {
+  return {
+    error: true,
+    data: error.response?.data || error.message,
+  }
+}
+
 // Функция для отправки данных
-export const submitData = async (data, endpoint, credentials = false) => {
-  console.log(document)
+export const submitData = async (data, endpoint, requiresAuth = false) => {
   try {
-    const response = await axios.post(`https://10.82.56.167:8005/api/${endpoint}`, data, {
-      headers: {
-            'Content-Type': 'application/json',
-          },
-      withCredentials: credentials,
-      validateStatus: (status) => {
-        // Считаем успешными только 2xx статусы
-        return status >= 200 && status < 300
-      },
+    // Если не требуется авторизация - создаем новый экземпляр без интерсептора
+    const client = requiresAuth
+      ? api
+      : axios.create({
+          baseURL: 'http://10.82.56.167:8005/api/',
+          headers: { 'Content-Type': 'application/json' },
+        })
+
+    const response = await client.post(endpoint, data, {
+      validateStatus: (status) => status >= 200 && status < 300,
     })
 
-    // Проверяем наличие ошибок в теле ответа
-    if (response.data?.error || response.data?.status === "error") {
-      return {
-        error: true,
-        data: response.data
-      };
-    }
-
-    return response.data;
+    return handleResponse(response)
   } catch (error) {
-    // Обработка сетевых ошибок и ответов с HTTP статусом ≠ 2xx
-    return {
-      error: true,
-      data: error.response?.data || error.message
-    };
+    return handleError(error)
   }
 }
 
-export const fetchData = async (endpoint, params = {}, credentials = false) => {
+// Функция для получения данных
+export const fetchData = async (endpoint, params = {}, requiresAuth = false) => {
   try {
-    const config = {
-      headers: {
-            'Content-Type': 'application/json',
-          },
-      params, // Параметры запроса
-      withCredentials: credentials,
+    // Если не требуется авторизация - создаем новый экземпляр без интерсептора
+    const client = requiresAuth
+      ? api
+      : axios.create({
+          baseURL: 'http://10.82.56.167:8005/api/',
+          headers: { 'Content-Type': 'application/json' },
+        })
+
+    const response = await client.get(endpoint, {
+      params,
       validateStatus: (status) => status >= 200 && status < 300,
-    }
+    })
 
-    const response = await axios.get(`https://10.82.56.167:8005/api/${endpoint}`, config)
-
-    // Проверяем наличие ошибок в теле ответа
-    if (response.data?.error || response.data?.status === 'error') {
-      return {
-        error: true,
-        data: response.data,
-      }
-    }
-
-    return response.data
+    return handleResponse(response)
   } catch (error) {
-    // Обработка сетевых ошибок и ответов с HTTP статусом ≠ 2xx
-    return {
-      error: true,
-      data: error.response?.data || error.message,
-    }
+    return handleError(error)
   }
 }
 
-export async function fetchProtectedData() {
+// Функция для получения защищенных данных с обработкой просроченного токена
+export const fetchProtectedData = async () => {
   try {
     const response = await api.get('/protected')
-    return response.data
+    return handleResponse(response)
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      // access token истёк — пробуем обновить
+    if (error.response?.status === 401) {
       try {
-        await api.post('/refresh')
-        // Повторяем запрос после обновления токена
-        const response = await api.get('/protected')
-        return response.data
+        // Пытаемся обновить токен
+        const refreshResponse = await api.post('/refresh')
+
+        // Сохраняем новый токен
+        const newToken = refreshResponse.data.access_token
+        sessionStorage.setItem('token', newToken)
+
+        // Повторяем исходный запрос
+        const retryResponse = await api.get('/protected')
+        return handleResponse(retryResponse)
       } catch (refreshError) {
-        // Обновление не удалось — нужно перелогиниться
-        throw new Error('Unauthorized, please login again')
+        // Очищаем токен при неудачном обновлении
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('user_id')
+        return {
+          error: true,
+          data: 'Session expired. Please login again.',
+        }
       }
-    } else {
-      throw error
     }
+    return handleError(error)
+  }
+}
+
+// Функция для выхода из системы
+export const logout = async () => {
+  try {
+    await api.post('/logout')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user_id')
+    return { success: true }
+  } catch (error) {
+    return handleError(error)
   }
 }

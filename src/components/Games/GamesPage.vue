@@ -28,7 +28,7 @@
           </svg>
         </router-link>
 
-        <button class="logout-button" @click="logout" :title="$t('common.logout')">
+        <button class="logout-button" @click="logout().then(res=>{if(res.success){let r = useRouter(); r.push('/login')}})" :title="$t('common.logout')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9c48e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
@@ -117,7 +117,8 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { logout } from '../../../api/api'
 
 const route = useRoute()
 if (route.name === 'main') {
@@ -277,16 +278,6 @@ export default {
 
     toggleUserMenu() {
   this.showUserMenu = !this.showUserMenu;
-},
-async logout() {
-  try {
-    await this.$axios.post('/api/logout');
-    localStorage.clear();
-    state.user = {};
-    this.$router.push('/login');
-  } catch (error) {
-    console.error('Logout error:', error);
-  }
 }
 
   },

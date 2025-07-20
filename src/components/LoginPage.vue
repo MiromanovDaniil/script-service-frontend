@@ -66,7 +66,8 @@ export default {
           if (response) {
             logger.add('User logged in')
             notifications.notify('User logged in')
-            localStorage.setItem("user_id", response.user.id);
+            sessionStorage.setItem("token", response.access_token);
+            sessionStorage.setItem("user_id", response.user.id);
             this.$router.push('/')
           }
         }
