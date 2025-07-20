@@ -7,7 +7,7 @@ const messages = {
       create: 'Create game',
     },
     stats: {
-      title: 'Statistics'
+      title: 'Statistics',
     },
     settings: {
       title: 'Settings',
@@ -16,6 +16,7 @@ const messages = {
     },
     common: {
       close: 'Close',
+      logout: 'Logout',
     },
     login: {
       title: 'Login',
@@ -41,7 +42,7 @@ const messages = {
       create: 'Создать игру',
     },
     stats: {
-      title: 'Статистика'
+      title: 'Статистика',
     },
     settings: {
       title: 'Настройки',
@@ -50,6 +51,7 @@ const messages = {
     },
     common: {
       close: 'Закрыть',
+      logout: 'Выйти из аккаунта',
     },
     login: {
       title: 'Вход',

@@ -4,7 +4,7 @@ import axios from 'axios'
 export const submitData = async (data, endpoint, credentials = false) => {
   console.log(document)
   try {
-    const response = await axios.post(`http://10.82.56.167:8005/api/${endpoint}`, data, {
+    const response = await axios.post(`https://10.82.56.167:8005/api/${endpoint}`, data, {
       headers: {
             'Content-Type': 'application/json',
           },
@@ -44,7 +44,7 @@ export const fetchData = async (endpoint, params = {}, credentials = false) => {
       validateStatus: (status) => status >= 200 && status < 300,
     }
 
-    const response = await axios.get(`http://10.82.56.167:8005/api/${endpoint}`, config)
+    const response = await axios.get(`https://10.82.56.167:8005/api/${endpoint}`, config)
 
     // Проверяем наличие ошибок в теле ответа
     if (response.data?.error || response.data?.status === 'error') {

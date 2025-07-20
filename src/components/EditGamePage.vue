@@ -138,6 +138,8 @@ export default {
         else {
           scene.scripts[scene.scripts.findIndex(s => s.id == this.scriptToEdit.id)] = dialog;
           saveState();
+          if (!this.regenerate)
+            return;
         }
 
         let goals = []
@@ -246,6 +248,7 @@ export default {
       scriptToEdit: null,
       scriptEditScene: null,
       sceneToEdit: null,
+      regenerate: false
     }
   },
   mounted() {
@@ -301,6 +304,7 @@ export default {
       :show-buttons="true"
       @closeModal="setCreateScriptModalState"
       @validate-request="saveScript"
+      @regenerate="regenerate = true"
     >
       <CreateScriptModal ref="child" :edit="scriptEdit" :script="scriptToEdit" :scene="scriptEditScene" />
     </ModalWindow>
