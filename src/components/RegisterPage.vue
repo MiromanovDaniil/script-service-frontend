@@ -72,7 +72,7 @@ export default {
         "surname": this.surname,
         "password": this.password,
       } 
-      submitData(regData, "register", false).then(response => {
+      submitData(regData, "register", false).then(response => { 
         if(response.error){
           this.error = "Не удалось войти в аккаунт";
           logger.add('Register failed');

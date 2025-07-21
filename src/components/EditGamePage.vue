@@ -300,6 +300,7 @@ export default {
     <span v-else class="empty-dialog-placeholder">Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
+      :regen='scriptEdit !== "false"'
       :header="'Диалог'"
       :show-buttons="true"
       @closeModal="setCreateScriptModalState"

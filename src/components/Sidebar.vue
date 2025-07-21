@@ -8,7 +8,7 @@
   <span class="user-name">{{ state.user.firstName || 'username' }}</span>
 </div>
 
-    <button @click="exit" class="btn">Игровая панель</button>
+    <button @click="exit" class="btn">Назад</button>
     <button @click="addScene" class="btn">Создать сцену</button>
     <Scenes
       @addScript="addScript"

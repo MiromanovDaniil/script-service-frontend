@@ -3,11 +3,21 @@
   >
     <div class="scenario-name" placeholder="Название диалога">{{scenario.name}}</div>
     <div class="scenario-description" placeholder="Краткое описание диалога">{{ scenario.description }}</div>
+    <div class="header-buttons">
+      <button class="btn" @click="saveScript" v-if="!isLoading">Сохранить</button>
 
-    <button class="btn" @click="saveScript">Сохранить</button>
-
-    <div class="scenario-actions">
-      <button @click="back" v-if="stack.length">Назад</button>
+      <div class="scenario-actions">
+        <button @click="back" v-if="stack.length">Назад</button>
+      </div>
+      <button 
+        class="regenerate-btn btn"
+        @click="reloadGraph"
+        title="Обновить диалог"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#6B46C1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
 
 
@@ -21,7 +31,8 @@
     
 
     <div class="canvas" ref="canvasRef" @mousedown="startPan" @wheel="handleWheel">
-      <div class="canvas-content" :style="{ 
+      <span v-if="isLoading"><i>Диалог еще генерируется. Не закрывайте приложение и не открывайте другие страницы!</i></span>
+      <div v-else class="canvas-content" :style="{ 
           transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
           transformOrigin: '0 0'
         }">
@@ -193,6 +204,7 @@ import { useRoute, useRouter } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
+let isLoading = ref(false);
 
 let isSpeaking = false;
 
@@ -632,15 +644,19 @@ function reloadGraph() {
           }));
         }
 
+        scenario.value = {
+          name: script.name || 'Новый диалог',
+          description: script.description || '',
+          data: loadedData
+        };
+
         // Если данных нет - создаем корневой узел
         if (loadedData.length === 0) {
-          loadedData = [{
-            id: 1,
-            line: 'Начало',
-            info: '',
-            to: [],
-            meta: {}
-          }];
+          isLoading = true;
+          return
+        }
+        else{
+          isLoading = false;
         }
 
         // Используем loadedData здесь
@@ -1360,6 +1376,17 @@ defineExpose({
   fill: #6b21a8;
 }
 
+.header-buttons {
+  display: flex;
+  justify-content:center;
+  grid-gap: 10vw;
 
+}
+
+@media (max-width: 600px) {
+  .header-buttons {
+    flex-direction: column;
+  }
+}
 
 </style>

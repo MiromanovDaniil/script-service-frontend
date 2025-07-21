@@ -119,14 +119,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { logout } from '../../../api/api'
-
-const route = useRoute()
-if (route.name === 'main') {
-  state.selectedGameId = null
-  state.selectedSceneId = null
-  state.selectedSceneId = null
-  saveState();
-}
 </script>
 
 <script>

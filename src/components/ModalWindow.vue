@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 export default{
   name: "ModalWindow",
-  props: {header:'', showButtons: true},
+  props: {header:{type:String, required:true}, showButtons: {type:Boolean, required:false}, regen: {type: Boolean, required:false}},
   methods: {
     closeModal(){
       if (this.showButtons)
@@ -10,7 +10,7 @@ export default{
     },
     handleSubmit(data) {
       this.$emit('validate-request', data);
-      if (this.header === 'Диалог'){
+      if (this.regen){
         this.$emit('regenerate', data);
       }
     }
@@ -25,7 +25,10 @@ export default{
       <button class="modal-dialog-close" v-if="showButtons" @click="closeModal"><svg width="28" height="28" fill="none"><path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2"/></svg></button>
       <div class="modal-dialog-header"><h1 class="modal-dialog-header-text">{{header}}</h1></div>
       <div class="modal-dialog-body"><slot></slot></div>
-      <div class="modal-dialog-footer"><button class="btn save-btn" v-if="showButtons && header === 'Диалог'" type="submit">Перегенерировать</button><button class="btn save-btn" v-if="showButtons" type="submit">Сохранить</button></div>
+      <div class="modal-dialog-footer">
+        <button class="btn save-btn" v-if="showButtons" type="submit">Сохранить</button>
+        <button class="btn save-btn" v-if="showButtons && regen" type="submit">Перегенерировать</button>
+      </div>
     </form>
   </div>
 </template>
@@ -79,6 +82,7 @@ export default{
  }
  .modal-dialog-footer>.btn {
    float: right;
+   margin-left: 2vw;
  }
 
 .save-btn:hover {
@@ -92,7 +96,7 @@ export default{
   font-size: 30px;
   padding: 0 4px;
   transition: transform 0.1s;
-   float: right;
+  float: right;
 }
 .modal-dialog-close:hover {
   transform: scale(1.18) rotate(7deg);

@@ -1,7 +1,7 @@
 <script>
 import Notifications from '@/components/Notifications.vue'
 import { toRaw } from 'vue';
-import { load, state } from './store';
+import { load, state, saveState } from './store';
 import { useRoute } from 'vue-router';
 
 export default {
@@ -10,7 +10,6 @@ export default {
     let route = useRoute();
     console.log(route.path)
     if(route.path === "/login" || route.path === "/register"){
-      console.log(1234)
       if(sessionStorage.getItem("user_id")){
         this.$router.push('/')
       }
@@ -20,7 +19,15 @@ export default {
         this.$router.push('/login')
       }
     }
-    toRaw(load()).then(val=>Object.assign(state, val.data));
+    load().then(val=>{
+      Object.assign(state, val.data)
+      if (route.name === 'main') {
+        state.selectedGameId = null
+        state.selectedSceneId = null
+        state.selectedSceneId = null
+        saveState();
+      }
+    });
   }
 }
 </script>
