@@ -1,18 +1,8 @@
 <template>
-  <div class="modal-bg" @click.self="close">
-    <div class="modal-window">
-      <!-- Кнопки удалить и закрыть -->
-      <div class="modal-actions">
-        <button class="icon-btn" @click="close">
-          <svg width="28" height="28" fill="none">
-            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />
-          </svg>
-        </button>
-      </div>
-      <h1 class="modal-title">Игра</h1>
-      <form @submit.prevent="submit" class="modal-form">
+  <ModalWindow :header="'Игра'" @validate-request="submit" @closeModal="close" :showButtons="true">
+      <div class="modal-form">
         <div class="modal-grid">
-          <!-- Левая колонка -->
+          
           <div>
             <div class="field-group">
               <label class="field-label">Название</label>
@@ -20,14 +10,14 @@
             </div>
             <div class="field-group">
               <label class="field-label">Характеристики мира</label>
-              <textarea v-model="game.description" class="input textarea" />
+              <textarea v-model="game.description" required class="input textarea" />
             </div>
           </div>
-          <!-- Правая колонка -->
+          
           <div>
             <div class="field-group">
               <label class="field-label">Жанр</label>
-              <select v-model="game.genre" class="input">
+              <select v-model="game.genre" required class="input">
                 <option disabled value="">Выберите жанр</option>
                 <option>Приключения</option>
                 <option>Фэнтези</option>
@@ -40,7 +30,7 @@
             </div>
             <div class="field-group">
               <label class="field-label">Исторический период</label>
-              <select v-model="game.techLevel" class="input">
+              <select v-model="game.techLevel" required class="input">
                 <option disabled value="">Выберите уровень</option>
                 <option>Каменный век</option>
                 <option>Средневековье</option>
@@ -63,17 +53,16 @@
             </div>
           </div>
         </div>
-        <div class="modal-buttons">
-          <button type="submit" class="save-btn">Сохранить</button>
-        </div>
-      </form>
-    </div>
-  </div>
+      </div>
+    </ModalWindow>
 </template>
 
 <script>
+import ModalWindow from '../ModalWindow.vue';
+
 export default {
   name: 'CreateGameModal',
+  components: {ModalWindow},
   props: {
     showDelete: { type: Boolean, default: false },
     gameData: { type: Object, default: null },
@@ -103,88 +92,62 @@ export default {
   },
   methods: {
     validate() {
-      this.resetErrors()
-      const errors = []
-
+      this.resetErrors();
+      let isValid = true;
       const fieldLabels = {
         name: 'Название',
-        answers_count: 'Количество ответов',
-        branches_count: 'Количество сюжетных веток',
-        characters: 'Персонажи',
-        description: 'Краткое содержание',
-      }
+        description: 'Характеристики мира',
+        genre: 'Жанр',
+        techLevel: 'Исторический период'
+      };
 
       for (const field of this.fieldsToValidate) {
-        const value = this.game[field]
-
-        if (typeof value === 'object') {
-          if (Object.keys(value).length === 0) {
-            this.errors[field] = true
+        const value = this.game[field];
+        
+        if (Array.isArray(value)) {
+          if (value.length === 0) {
+            this.errors[field] = true;
+            isValid = false;
           }
-        } else if (typeof value === 'string') {
+        } 
+        else if (typeof value === 'string') {
           if (!value.trim()) {
-            this.errors[field] = true
+            this.errors[field] = true;
+            isValid = false;
           }
-        } else if (value === null || value === undefined || value === 0) {
-          this.errors[field] = true
+        } 
+        else if (value === null || value === undefined) {
+          this.errors[field] = true;
+          isValid = false;
         }
+      }
 
-        return !errors.length
-      }
+      return isValid;
     },
+    
     resetErrors() {
-      for (const field in this.errors) {
-        this.errors[field] = false
+      this.errors = {};
+    },
+    
+    submit() {
+      if (!this.validate()) {
+        return; // Не сохраняем если есть ошибки
       }
+      this.$emit('save', { ...this.game })
+      this.close()
     },
     close() {
       this.$emit('close')
     },
     remove() {
       this.$emit('delete')
-    },
-    submit() {
-      this.$emit('save', { ...this.game })
-      this.close()
-    },
+    }
   },
 }
 </script>
 
 <style scoped>
-/* Затемнение фона */
-.modal-bg {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(100, 60, 90, 0.48);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-/* Окно */
-.modal-window {
-  background: #fff;
-  border-radius: 18px;
-  min-width: 700px;
-  max-width: 900px;
-  min-height: 480px;
-  box-shadow: 0 12px 48px #ab72e780;
-  padding: 36px 38px 24px 38px;
-  position: relative;
-  overflow: visible;
-}
 
-.modal-actions {
-  position: absolute;
-  top: 22px;
-  right: 28px;
-  display: flex;
-  gap: 16px;
-}
 .icon-btn {
   background: none;
   border: none;
@@ -211,7 +174,7 @@ export default {
 
 .modal-grid {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: auto auto;
   gap: 5%;
 }
 

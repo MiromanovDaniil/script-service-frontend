@@ -4,12 +4,32 @@
     <div class="scenario-name" placeholder="Название диалога">{{scenario.name}}</div>
     <div class="scenario-description" placeholder="Краткое описание диалога">{{ scenario.description }}</div>
 
-    <button class="btn" @click="saveScript">Сохранить</button>
+   <div class="button-group">
+  <button class="btn" @click="undoLastAction" title="Отменить" v-if="!isLoading">
+        <svg fill="#601f7e" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="none">
+  <path d="M9,16 C9.85216986,16 10.2974338,15.0144864 9.78322518,14.3774732 L9.70710678,14.2928932 L7.41602684,12.0006549 C8.6852851,10.797551 10.6983085,10 13,10 C16.918278,10 20,12.3112915 20,15 C20,15.5522847 20.4477153,16 21,16 C21.5522847,16 22,15.5522847 22,15 C22,11.0612915 17.918278,8 13,8 C10.1933072,8 7.65904665,8.99693838 6.00030879,10.5849581 L3.70710678,8.29289322 C3.1045317,7.69031813 2.09281919,8.07233231 2.00598327,8.88636906 L2,9 L2,15 C2,15.5128358 2.38604019,15.9355072 2.88337887,15.9932723 L3,16 L9,16 Z"/>
+</svg>
+      </button>
 
-    <div class="scenario-actions">
-      <button @click="back" v-if="stack.length">Назад</button>
-    </div>
+  <button class="btn" @click="redoLastAction" title="Вперёд" v-if="!isLoading">
+  <svg fill="#601f7e" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="none" transform="matrix(-1,0,0,1,0,0)">
+  <path d="M9,16 C9.85216986,16 10.2974338,15.0144864 9.78322518,14.3774732 L9.70710678,14.2928932 L7.41602684,12.0006549 C8.6852851,10.797551 10.6983085,10 13,10 C16.918278,10 20,12.3112915 20,15 C20,15.5522847 20.4477153,16 21,16 C21.5522847,16 22,15.5522847 22,15 C22,11.0612915 17.918278,8 13,8 C10.1933072,8 7.65904665,8.99693838 6.00030879,10.5849581 L3.70710678,8.29289322 C3.1045317,7.69031813 2.09281919,8.07233231 2.00598327,8.88636906 L2,9 L2,15 C2,15.5128358 2.38604019,15.9355072 2.88337887,15.9932723 L3,16 L9,16 Z"></path>
+</svg>
+</button>
+  <button class="btn" @click="saveScript" v-if="!isLoading">Сохранить</button>
+  <button 
+        class="regenerate-btn btn"
+        @click="()=>{reloadGraph();notifications.notify('Graph refreshed')}"
+        title="Обновить диалог"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#601f7e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+</div>
 
+
+    
 
     <div class="zoom-controls">
       <button @click="zoomIn">+</button>
@@ -21,7 +41,8 @@
     
 
     <div class="canvas" ref="canvasRef" @mousedown="startPan" @wheel="handleWheel">
-      <div class="canvas-content" :style="{ 
+      <span v-if="isLoading"><i>Диалог еще генерируется. Не закрывайте приложение и не открывайте другие страницы!</i></span>
+      <div v-else class="canvas-content" :style="{ 
           transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
           transformOrigin: '0 0'
         }">
@@ -123,31 +144,32 @@
               <div class="actions">
         
 <button @click="() => addChild(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
   </svg>
 </button>
 <button @click="() => editNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
+  <svg viewBox="0 0 24 24" width="48" height="48" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
   </svg>
 </button>
 <button @click="() => deleteNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
+  <svg viewBox="0 0 24 24" width="48" height="48" stroke="#7e22ce" fill="#00000000" stroke-width="1.5px">
     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
   </svg>
 </button>
 <button @click="() => connectNode(node)" class="icon-button">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
   </svg>
 </button>
 <button @click="() => playSpeech(node.line)" class="icon-button" title="Прослушать">
-  <svg viewBox="0 0 24 24" width="32" height="32" fill="#7e22ce">
+  <svg viewBox="0 0 24 24" width="48" height="48" fill="#7e22ce">
     <path d="M5 9v6h4l5 5V4l-5 5H5z"/>
     <path d="M14.5 12c0-1.77-.73-3.37-1.9-4.53l1.06-1.06C15.33 7.6 16 9.71 16 12s-.67 4.4-2.34 5.59l-1.06-1.06A6.996 6.996 0 0 0 14.5 12z"/>
   </svg>
 </button>
+
               </div>
             </div>
           </div>
@@ -164,7 +186,7 @@
       @regenerate="handleNodeRegenerate"
     />
 
-    <dialog 
+   <dialog 
   v-if="showEdgeModal"
   class="edge-dialog" 
   open
@@ -174,9 +196,12 @@
   <textarea v-model="edgeText" class="edge-textarea"></textarea>
   <div class="dialog-actions">
     <button @click="closeEdgeModal">Отмена</button>
+    <button @click="deleteEdge" class="delete-button">Удалить</button>
     <button @click="saveEdgeText">Сохранить</button>
   </div>
 </dialog>
+
+
   </div>
 </template>
 
@@ -185,24 +210,49 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { state, saveState } from '@/store'
 import notifications from '@/notifications'
 import { mount } from '@vue/test-utils'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
 
 const hoveredLineIndex = ref<number | null>(null);
+let isLoading = ref(false);
 
+let isSpeaking = false;
 
 function playSpeech(text: string) {
   if (!text) return;
+
+  if (window.speechSynthesis.speaking || isSpeaking) {
+    window.speechSynthesis.cancel();
+    isSpeaking = false;
+    return;
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
+
   const storedVoiceName = localStorage.getItem('voiceName') || '';
   const voice = window.speechSynthesis
     .getVoices()
     .find((v) => v.name === storedVoiceName);
-  if (voice) utterance.voice = voice;
+
+  if (voice) {
+    utterance.voice = voice;
+  }
+
+  isSpeaking = true;
+
+  utterance.onend = () => {
+    isSpeaking = false;
+  };
+
+  utterance.onerror = () => {
+    isSpeaking = false;
+  };
+
   window.speechSynthesis.speak(utterance);
 }
 
-const route = useRoute()
+const route = useRoute();
+const router = useRouter();
 const emit = defineEmits(['createScene'])
 
 const editingNode = ref<GraphNode | null>(null);
@@ -491,6 +541,7 @@ function editNode(node: GraphNode) {
 
 function handleNodeSubmit({ main, additional }: { main: string; additional: string }) {
   if (editingNode.value) {
+    saveHistorySnapshot();
     editingNode.value.line = main;
     editingNode.value.info = additional;
   }
@@ -499,6 +550,7 @@ function handleNodeSubmit({ main, additional }: { main: string; additional: stri
 
 function handleNodeRegenerate() {
   if (editingNode.value) {
+    saveHistorySnapshot();
     // РЕГЕНЕРАЦИЯ
     editingNode.value.line = `[Регенерировано] ${editingNode.value.line}`;
   }
@@ -589,71 +641,91 @@ function reloadGraph() {
     if (scene) {
       const script = scene.scripts.find(s => s.id === state.selectedScriptId);
       if (script) {
+        // Объявляем loadedData здесь
         let loadedData: GraphNode[] = [];
-    
-    if (Array.isArray(script.result?.data)) {
-      loadedData = script.result.data.map(node => ({
-        ...node,
-        to: node.to ? node.to.map(edge => ({ 
-          id: edge.id, 
-          line: edge.line || '' 
-        })) : [],
-        meta: node.meta || {}
-      }));
+
+        if (Array.isArray(script.result?.data)) {
+          // Заполняем данными
+          loadedData = script.result.data.map(node => ({
+            ...node,
+            to: node.to ? node.to.map(edge => ({ 
+              id: edge.id, 
+              line: edge.line || '' 
+            })) : [],
+            meta: node.meta || {}
+          }));
+        }
+
+        scenario.value = {
+          name: script.name || 'Новый диалог',
+          description: script.description || '',
+          data: loadedData
+        };
+
+        // Если данных нет - создаем корневой узел
+        if (loadedData.length === 0) {
+          isLoading = true;
+          return
+        }
+        else{
+          isLoading = false;
+        }
+
+        // Используем loadedData здесь
+        scenario.value = {
+          name: script.name || 'Новый диалог',
+          description: script.description || '',
+          data: loadedData
+        };
+
+        currentRoot.value = scenario.value.data[0];
+        layoutTree();
+        nextTick(() => {
+          layoutTree();
+          
+          // Центрируем на весь граф
+          let minX = Infinity, maxX = -Infinity;
+          let minY = Infinity, maxY = -Infinity;
+
+          flatNodes.value.forEach(node => {
+            const x = node.meta?.x || 0;
+            const y = node.meta?.y || 0;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          });
+
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          
+          animateCenterTo(centerX, centerY);
+        });
+      } else {
+        state.selectedSceneId = null;
+        state.selectedScriptId = null;
+        saveState();
+      }
+    } else {
+      state.selectedSceneId = null;
+      state.selectedScriptId = null;
+      saveState();
     }
-
-    if (script?.result?.data) {
-      scenario.value.data = script.result.data.map(node => ({
-        ...node,
-        to: node.to || [], // Гарантируем, что to будет массивом
-        meta: node.meta || {}
-      }));
-    }
-
-    // Если данных нет - создаем корневой узел
-    if (loadedData.length === 0) {
-      loadedData = [{
-        id: 1,
-        line: 'Начало',
-        info: '',
-        to: [],
-        meta: {}
-      }];
-    }
-
-    scenario.value = {
-      name: script.name || 'Новый диалог',
-      description: script.description || '',
-      data: loadedData
-    };
-
-    currentRoot.value = scenario.value.data[0];
-    layoutTree();
-    nextTick(() => {
-      layoutTree();
-      
-      // Центрируем на весь граф
-      let minX = Infinity, maxX = -Infinity;
-      let minY = Infinity, maxY = -Infinity;
-
-      flatNodes.value.forEach(node => {
-        const x = node.meta?.x || 0;
-        const y = node.meta?.y || 0;
-        minX = Math.min(minX, x);
-        maxX = Math.max(maxX, x);
-        minY = Math.min(minY, y);
-        maxY = Math.max(maxY, y);
-      });
-
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      
-      animateCenterTo(centerX, centerY);
-    });
-  }
-    }
+  } else {
+    router.push('/');
   }
 }
+
+function deleteEdge() {
+  if (editingEdge.value) {
+    saveHistorySnapshot();
+    const { node, index } = editingEdge.value;
+    node.to.splice(index, 1);
+    closeEdgeModal();
+    layoutTree(); 
+  }
+}
+
 
 onMounted(reloadGraph);
 watch(
@@ -663,6 +735,58 @@ watch(
   },
   { deep: true }
 );
+
+const history = ref<Scenario[]>([]);
+const redoHistory = ref<Scenario[]>([]);
+const maxHistorySize = 50;
+
+
+function saveHistorySnapshot() {
+  const snapshot = JSON.parse(JSON.stringify(scenario.value));
+  history.value.push(snapshot);
+  redoHistory.value = [];
+
+  if (history.value.length > maxHistorySize) {
+    history.value.shift();
+  }
+}
+
+function redoLastAction() {
+  if (redoHistory.value.length === 0) {
+    notifications.notify("Нет действий для повтора");
+    return;
+  }
+
+  const nextState = redoHistory.value.pop();
+  if (nextState) {
+    history.value.push(JSON.parse(JSON.stringify(scenario.value)));
+    scenario.value = nextState;
+    currentRoot.value = scenario.value.data[0];
+    layoutTree();
+    
+    notifications.notify("Действие возвращено");
+  }
+}
+
+
+function undoLastAction() {
+  if (history.value.length === 0) {
+    notifications.notify("Нет действий для отмены");
+    return;
+  }
+
+  const lastState = history.value.pop();
+  if (lastState) {
+    redoHistory.value.push(JSON.parse(JSON.stringify(scenario.value))); 
+    scenario.value = lastState;
+    currentRoot.value = scenario.value.data[0];
+    layoutTree();
+    
+    notifications.notify("Последнее действие отменено");
+  }
+}
+
+
 
 function saveScript() {
   state.games
@@ -733,6 +857,8 @@ interface Line {
   tooltipWidth: number
   tooltipText: string
 }
+
+
 
 const lines = computed(() => {
   const arr: Line[] = [];
@@ -811,6 +937,7 @@ const svgHeight = computed(() => {
 })
 
 function addChild(parentNode: GraphNode) {
+  saveHistorySnapshot();
   const newId = Date.now(); // Генерируем числовой ID
 
   const parentX = parentNode.meta?.x || 0;
@@ -843,6 +970,7 @@ function addChild(parentNode: GraphNode) {
 }
 
 function deleteNode(nodeToDelete: GraphNode) {
+  saveHistorySnapshot();
   // 1. Удаляем сам узел из данных
   scenario.value.data = scenario.value.data.filter(
     node => node.id !== nodeToDelete.id
@@ -885,6 +1013,7 @@ function connectNode(targetNode: GraphNode) {
     connectingFrom.value = targetNode;
   } else {
     
+    saveHistorySnapshot();
     const sourceNode = connectingFrom.value;
     
     const isSameNode = sourceNode.id === targetNode.id;
@@ -916,6 +1045,7 @@ function editEdge(node: GraphNode, edgeIndex: number) {
 
 function saveEdgeText() {
   if (editingEdge.value) {
+    saveHistorySnapshot();
     editingEdge.value.node.to[editingEdge.value.index].line = edgeText.value;
     closeEdgeModal();
   }
@@ -945,6 +1075,10 @@ function findEdgeIndex(line: Line): number {
   
   return node.to.findIndex(edge => edge.id === targetNode.id);
 }
+
+defineExpose({
+  reloadGraph
+});
 
 </script>
 
@@ -1013,7 +1147,7 @@ function findEdgeIndex(line: Line): number {
   position: absolute;
   top: 0;
   left: 0;
-  will-change: transform; /* Оптимизация анимации */
+  will-change: transform; 
 }
 
 .lines {
@@ -1312,4 +1446,46 @@ function findEdgeIndex(line: Line): number {
   fill: #6b21a8;
 }
 
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: background 0.2s;
+  border-radius: 6px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.icon-btn svg {
+  stroke: #4b5563; 
+  width: 24px;
+  height: 24px;
+}
+.icon-btn:hover svg {
+  stroke: #a78bfa; 
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: 10vw;
+  justify-content: center;
+  margin-bottom: 3vh; 
+}
+
+@media (max-width: 750px) {
+  .button-group {
+    flex-direction: column;
+    align-items: start;
+    gap: 1vh
+  }
+}
 </style>

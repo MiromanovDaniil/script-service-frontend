@@ -2,24 +2,40 @@
   <div class="games-dashboard">
     <!-- Top bar -->
     <header class="dashboard-header">
-      <router-link to="/profile" class="dashboard-user">
-        <img class="user-avatar" :src="state.user.avatar || '/assets/logo.png'" alt="avatar" />
+      <div class="dashboard-user">
+        <svg class="user-avatar-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7c37a5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+        </svg>
         <span class="user-name">{{ state.user.firstName || 'username' }}</span>
-      </router-link>
+      </div>
+
       <div class="dashboard-status">
         {{ $t('games.total') }}: <b>{{ state.games.length }}</b>
       </div>
-      <button class="dashboard-settings" :title="$t('settings.title')" @click="showSettings = true">
-        <svg width="26" height="26" fill="none">
-          <circle cx="13" cy="13" r="12" stroke="#9a60d6" stroke-width="2" />
-          <path d="M13 8v5l4 2" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
-        </svg>
-      </button>
-      <router-link to="/stats" class="dashboard-stats" :title="$t('stats.title')">
-        <svg width="26" height="26" fill="none">
-          <path d="M6 18V10M12 18V6M18 18v-4" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
-        </svg>
-      </router-link>
+      
+      <div class="header-actions">
+        <button class="dashboard-settings" :title="$t('settings.title')" @click="showSettings = true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+
+        <router-link to="/stats" class="dashboard-stats" :title="$t('stats.title')">
+          <svg width="26" height="26" fill="none">
+            <path d="M6 18V10M12 18V6M18 18v-4" stroke="#9a60d6" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </router-link>
+
+        <button class="logout-button" @click="logoutL" :title="$t('common.logout')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9c48e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- Cards grid -->
@@ -101,14 +117,8 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-if (route.name === 'main') {
-  state.selectedGameId = null
-  state.selectedSceneId = null
-  state.selectedSceneId = null
-}
+import { useRoute, useRouter } from 'vue-router'
+import { logout } from '../../../api/api'
 </script>
 
 <script>
@@ -118,7 +128,7 @@ import { state, saveState } from '@/store'
 import CharactersModal from '../CharacterViewModal.vue'
 import ModalWindow from '../ModalWindow.vue'
 import CreateCharacterModal from '../CreateCharacterModal.vue'
-
+let r = useRouter();
 export default {
   components: { GameItem, CreateGameModal, CharactersModal, ModalWindow, CreateCharacterModal },
   data() {
@@ -134,7 +144,9 @@ export default {
       selectedGame: null,
       selectedGameCharacters: [],
       isCharEditModalOpened: false,
-      editChar: ""
+      editChar: "",
+      showUserMenu: false,
+
     }
   },
   computed: {
@@ -255,6 +267,17 @@ export default {
         this.isCharEditModalOpened = false;
       }
     },
+
+    toggleUserMenu() {
+  this.showUserMenu = !this.showUserMenu;
+},
+async logoutL() {
+      const res = await logout(); // Ваша функция logout из api.js
+      if (res.success) {
+        this.$router.push('/login'); // Используем this.$router
+      }
+      return res;
+    }
   },
 }
 </script>
@@ -267,6 +290,7 @@ export default {
   grid-template-rows: auto 1fr;
   background: linear-gradient(120deg, #e6d5ff 0%, #fff7ff 100%);
   overflow: hidden;
+  user-select: none;
 }
 
 .dashboard-header {
@@ -278,7 +302,7 @@ export default {
   font-family: inherit;
   font-size: 1.12rem;
   gap: 25px;
-  overflow-y: auto; /* Добавлена вертикальная прокрутка */
+  overflow: hidden; /* Добавлена вертикальная прокрутка */
   max-height: calc(100vh - 120px); /* Ограничение высоты для появления скролла */
   scrollbar-width: thin; /* Для Firefox */
   scrollbar-color: #c4a8f4 #f0e5ff; /* Для Firefox */
@@ -290,13 +314,16 @@ export default {
   gap: 12px;
   text-decoration: none;
 }
-.user-avatar {
+.user-avatar-icon {
   width: 36px;
   height: 36px;
+  padding: 2px;
   border-radius: 50%;
+  background: #ebe0fd;
   box-shadow: 0 2px 12px #a78ed03c;
-  background: linear-gradient(135deg, #c499fe 40%, #beecff 100%);
+  transition: background 0.2s;
 }
+
 .user-name {
   font-size: 22px;
   font-weight: 600;
@@ -344,6 +371,7 @@ export default {
 }
 
 .games-list {
+  overflow-y: auto;
   width: 100%;
   padding: 12px 44px 42px 44px;
   display: grid;
@@ -478,5 +506,45 @@ export default {
   background-color: #c4a8f4;
   border-radius: 10px;
   border: 2px solid #f0e5ff;
+}
+.user-dropdown {
+  position: absolute;
+  top: 72px;
+  left: 44px;
+  background: white;
+  border: 1px solid #d3bfff;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(137, 98, 199, 0.2);
+  padding: 10px 16px;
+  z-index: 10;
+}
+.logout-button {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.logout-button:hover {
+  background: #f3ddff;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  padding: 7px;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: background 0.16s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

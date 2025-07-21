@@ -1,4 +1,5 @@
 ﻿import { reactive, toRaw } from 'vue'
+import { submitData, fetchData } from '../api/api'
 
 // СТРУКТУРА ДАННЫХ
 const defaultState = {
@@ -16,25 +17,16 @@ const defaultState = {
 }
 
 function load() {
-  const raw = localStorage.getItem('scenario-data')
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw)
-      return {
-        ...defaultState,
-        ...parsed,
-        user: { ...defaultState.user, ...(parsed.user || {}) },
-      }
-    } catch (e) {
-      console.error('failed to parse state', e)
-    }
-  }
-  return { ...defaultState }
+  let res = fetchData(`users/me/data`, true)
+  return res
 }
 
-const state = reactive(load())
+const state = reactive({...defaultState})
+
 function saveState() {
-  localStorage.setItem('scenario-data', JSON.stringify(toRaw(state)))
+  console.log('save')
+  console.log({ data: toRaw(state) })
+  submitData({'data': toRaw(state)}, `users/me/upd/data`, true)
 }
 
 function setToken(token) {
@@ -52,4 +44,4 @@ function updateUser(data) {
   saveState()
 }
 
-export { state, defaultState, saveState, setToken, clearToken, updateUser }
+export { state, defaultState, load, saveState, setToken, clearToken, updateUser }

@@ -4,65 +4,73 @@ const messages = {
   en: {
     games: {
       total: 'Total games',
-      create: 'Create game'
+      create: 'Create game',
     },
     stats: {
-      title: 'Statistics'
+      title: 'Statistics',
     },
     settings: {
       title: 'Settings',
       darkTheme: 'Dark theme',
-      language: 'Language'
+      language: 'Language',
     },
     common: {
-      close: 'Close'
+      close: 'Close',
+      logout: 'Logout',
     },
     login: {
       title: 'Login',
-      username: 'Username',
+      mail: 'Email',
       password: 'Password',
       login: 'Login',
-      register: 'Register'
+      register: 'Register',
     },
     register: {
       title: 'Registration',
-      username: 'Username',
+      mail: 'Email',
+      name: 'Name',
+      surname: 'Surname',
       password: 'Password',
+      password2: 'Verify password',
       signup: 'Sign Up',
-      login: 'Log In'
-    }
+      login: 'Log In',
+    },
   },
   ru: {
     games: {
       total: 'Всего игр',
-      create: 'Создать игру'
+      create: 'Создать игру',
     },
     stats: {
-      title: 'Статистика'
+      title: 'Статистика',
     },
     settings: {
       title: 'Настройки',
       darkTheme: 'Тёмная тема',
-      language: 'Язык интерфейса'
+      language: 'Язык интерфейса',
     },
     common: {
-      close: 'Закрыть'
+      close: 'Закрыть',
+      logout: 'Выйти из аккаунта',
     },
     login: {
       title: 'Вход',
-      username: 'Имя пользователя',
+      mail: 'Email',
       password: 'Пароль',
       login: 'Войти',
-      register: 'Регистрация'
+      register: 'Регистрация',
     },
     register: {
       title: 'Регистрация',
-      username: 'Имя пользователя',
+      mail: 'Email',
+      name: 'Имя',
+      surname: 'Фамилия',
       password: 'Пароль',
+      password2: 'Подтвердите пароль',
       signup: 'Зарегистрироваться',
-      login: 'Войти'
-    }
-  }
+      login: 'Войти',
+    },
+  },
 }
 
 const locale = localStorage.getItem('locale') || 'ru'

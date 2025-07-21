@@ -4,10 +4,22 @@
       <h1>{{ $t('register.title') }}</h1>
       <form @submit.prevent="submit">
         <div class="form-group">
-          <input v-model="username" class="input" :placeholder="$t('register.username')" />
+          <input v-model="mail" type="email" class="input" :placeholder="$t('register.mail')" />
+        </div>
+        <div class="form-group">
+          <input v-model="name" class="input" :placeholder="$t('register.name')" />
+        </div>
+        <div class="form-group">
+          <input v-model="surname" class="input" :placeholder="$t('register.surname')" />
         </div>
         <div class="form-group">
           <input v-model="password" class="input" type="password" :placeholder="$t('register.password')" />
+        </div>
+        <div class="form-group">
+          <input v-model="password2" class="input" type="password" :placeholder="$t('register.password2')" />
+        </div>
+        <div class="error-t">
+          {{this.error}}
         </div>
         <button type="submit" class="btn">{{ $t('register.signup') }}</button>
         <p class="login-link">
@@ -19,7 +31,7 @@
 </template>
 
 <script>
-import { registerUser } from '@/api/api.js'
+import { submitData } from '@/../api/api.js'
 import logger from '@/logger'
 import notifications from '@/notifications'
 
@@ -27,21 +39,49 @@ export default {
   name: 'RegisterPage',
   data() {
     return {
-      username: '',
-      password: ''
+      mail: '',
+      name: '',
+      surname: '',
+      password: '',
+      password2: '',
+      error: '',
+      fieldsToValidate: ['mail', 'name', 'surname', 'password']
     }
   },
   methods: {
-    async submit() {
-      try {
-        await registerUser({ username: this.username, password: this.password })
-        logger.add('User registered')
-        notifications.notify('User registered')
-        this.$router.push('/login')
-      } catch (e) {
-        logger.add('Register failed')
-        notifications.notify('Register failed')
+    validate() {
+      for (const element of this.fieldsToValidate) {
+        if (!(this[element].trim())){
+          this.error = 'Все поля обязательны для заполнения';
+          return false;
+        }
       }
+      if (this.password != this.password2){
+        this.error = 'Пароли не совпадают';
+        return false
+      }
+      return true;
+    },
+    submit() {
+      if (!this.validate()) return;
+      else this.error = "";
+
+      let regData = {
+        "mail": this.mail,
+        "name": this.name,
+        "surname": this.surname,
+        "password": this.password,
+      } 
+      submitData(regData, "register", false).then(response => { 
+        if(response.error){
+          this.error = "Не удалось войти в аккаунт";
+          logger.add('Register failed');
+        }
+        else{
+          logger.add('User registered')
+          this.$router.push('/login')
+        }
+      })
     }
   }
 }
@@ -55,6 +95,11 @@ export default {
   height: 100vh;
   width: 100%;
   background: #f3f4f6;
+  user-select: none;
+}
+
+.error-t {
+  color: rgb(173, 0, 0);
 }
 
 .auth-container {
@@ -79,32 +124,21 @@ h1 {
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.3s;
 }
 
-.input:focus {
-  border-color: #10b981;
-}
-
 .btn {
   width: 100%;
   padding: 0.75rem;
-  background-color: #10b981;
-  color: white;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   margin-top: 0.5rem;
   transition: background-color 0.3s;
-}
-
-.btn:hover {
-  background-color: #059669;
 }
 
 .login-link {

@@ -1,10 +1,10 @@
 <template>
   <div class="notifications">
     <transition-group name="fade" tag="div">
-      <div v-for="note in notes" :key="note.id" class="note">
+      <div v-for="note in notes" :key="note.id" class="note" :style="{'border-color': this.bar, 'color': this.text, 'background': this.background}">
         <span class="msg">{{ note.message }}</span>
         <button class="close" @click="remove(note.id)">×</button>
-        <div class="bar" :style="{ animationDuration: note.timeout + 'ms' }"></div>
+        <div class="bar" :style="{ animationDuration: note.timeout + 'ms', 'background': this.bar }"></div>
       </div>
     </transition-group>
   </div>
@@ -14,6 +14,7 @@
 import notifications from '@/notifications'
 export default {
   name: 'Notifications',
+  props: ['background', 'bar', 'text'],
   computed: {
     notes() {
       return notifications.notifications
@@ -38,9 +39,7 @@ export default {
 }
 .note {
   position: relative;
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  border-left: 4px solid #10b981;
-  color: #064e3b;
+  border-left: 4px solid;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
@@ -63,7 +62,6 @@ export default {
   bottom: 0;
   left: 0;
   height: 3px;
-  background: #10b981;
   width: 100%;
   animation-name: shrink;
   animation-timing-function: linear;

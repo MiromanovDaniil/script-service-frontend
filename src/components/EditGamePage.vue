@@ -10,7 +10,7 @@ import ScriptItem from '@/components/ScriptItem.vue'
 import { watch } from 'vue'
 import AnswerLoadingModal from '@/components/AnswerLoadingModal.vue'
 import CreateCharacterModal from '@/components/CreateCharacterModal.vue'
-import { submitDialogData } from '../api/api'
+import { submitData } from '../../api/api'
 import { scene } from '@/types.js'
 import notifications from '@/notifications'
 
@@ -138,7 +138,8 @@ export default {
         else {
           scene.scripts[scene.scripts.findIndex(s => s.id == this.scriptToEdit.id)] = dialog;
           saveState();
-          return
+          if (!this.regenerate)
+            return;
         }
 
         let goals = []
@@ -175,15 +176,28 @@ export default {
           context: dialog.description,
           goals: goals,
         }
-        submitDialogData(dialogData)
+        submitData(dialogData, "generate", false)
           .then(
             (response) =>
-              (scenes[
-                scenes.findIndex((gameId) => gameId === this.createScriptSceneId)
-              ].scripts.find((s) => s.id == dialog.id).result = response),
+              {
+                if(response.error){
+                  throw response.error.data;
+                }
+                scenes[scenes.findIndex((gameId) => gameId.id === this.createScriptSceneId)].scripts.find((s) => s.id == dialog.id).result = response
+                saveState();
+                
+              },
           )
           .catch((error) => console.error('Ошибка:', error))
+        state.selectedSceneId = this.createScriptSceneId;
+        state.selectedScriptId = dialog.id
+        this.$nextTick(() => {
+              if (this.$refs.graph) {
+                this.$refs.graph.reloadGraph();
+              }
+            });
       }
+      
       saveState()
       notifications.notify('Script saved')
     },
@@ -234,13 +248,10 @@ export default {
       scriptToEdit: null,
       scriptEditScene: null,
       sceneToEdit: null,
+      regenerate: false
     }
   },
   mounted() {
-    if (!localStorage.getItem('scenario-data')) {
-      localStorage.setItem('scenario-data', JSON.stringify(defaultState))
-    }
-
     // Find the game
     this.game = state.games.find((g) => g.id === this.$route.params.id)
     state.selectedGameId = this.$route.params.id
@@ -282,16 +293,19 @@ export default {
     />
     <MainView
       v-if="!(stateLoc.selectedSceneId === null || stateLoc.selectedScriptId === null)"
+      ref="graph"
       @createScene="addScene"
       @createScript="addScript"
     />
-    <span v-else>Здесь появится открытый диалог</span>
+    <span v-else class="empty-dialog-placeholder">Здесь появится открытый диалог</span>
     <ModalWindow
       v-if="createScriptModalOpened"
+      :regen='scriptEdit !== "false"'
       :header="'Диалог'"
       :show-buttons="true"
       @closeModal="setCreateScriptModalState"
       @validate-request="saveScript"
+      @regenerate="regenerate = true"
     >
       <CreateScriptModal ref="child" :edit="scriptEdit" :script="scriptToEdit" :scene="scriptEditScene" />
     </ModalWindow>
@@ -332,4 +346,12 @@ export default {
   flex-direction: row;
   height: 97.5vh;
 }
+
+.empty-dialog-placeholder {
+  margin: 20px 30px;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #7b6a91;
+}
+
 </style>

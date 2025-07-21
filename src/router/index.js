@@ -20,4 +20,16 @@ const router = createRouter({
   routes,
 })
 
+router.beforeEach((to, from, next) => {
+  const isAuth = sessionStorage.getItem('user_id')
+
+  if (!isAuth && to.path !== '/login' && to.path !== '/register') {
+  }
+  else if (isAuth && (to.path === '/login' || to.path === '/register')) {
+    next('/')
+  } else {
+    next()
+  }
+})
+
 export default router
