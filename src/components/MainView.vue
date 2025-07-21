@@ -3,13 +3,24 @@
   >
     <div class="scenario-name" placeholder="Название диалога">{{scenario.name}}</div>
     <div class="scenario-description" placeholder="Краткое описание диалога">{{ scenario.description }}</div>
-    <div class="header-buttons">
-      <button class="btn" @click="saveScript" v-if="!isLoading">Сохранить</button>
 
-      <div class="scenario-actions">
-        <button @click="back" v-if="stack.length">Назад</button>
-      </div>
-      <button 
+   <div class="button-group">
+  <button class="btn icon-btn" @click="undoLastAction" title="Отменить">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
+  </button>
+
+  <button class="btn icon-btn" @click="redoLastAction" title="Вперёд">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+  </svg>
+</button>
+
+
+  <button class="btn" @click="saveScript">Сохранить</button>
+
+  <button 
         class="regenerate-btn btn"
         @click="()=>{reloadGraph();notifications.notify('Graph refreshed')}"
         title="Обновить диалог"
@@ -18,8 +29,10 @@
           <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#601f7e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-    </div>
+</div>
 
+
+    
 
     <div class="zoom-controls">
       <button @click="zoomIn">+</button>
@@ -531,6 +544,7 @@ function editNode(node: GraphNode) {
 
 function handleNodeSubmit({ main, additional }: { main: string; additional: string }) {
   if (editingNode.value) {
+    saveHistorySnapshot();
     editingNode.value.line = main;
     editingNode.value.info = additional;
   }
@@ -539,6 +553,7 @@ function handleNodeSubmit({ main, additional }: { main: string; additional: stri
 
 function handleNodeRegenerate() {
   if (editingNode.value) {
+    saveHistorySnapshot();
     // РЕГЕНЕРАЦИЯ
     editingNode.value.line = `[Регенерировано] ${editingNode.value.line}`;
   }
@@ -706,6 +721,7 @@ function reloadGraph() {
 
 function deleteEdge() {
   if (editingEdge.value) {
+    saveHistorySnapshot();
     const { node, index } = editingEdge.value;
     node.to.splice(index, 1);
     closeEdgeModal();
@@ -722,6 +738,58 @@ watch(
   },
   { deep: true }
 );
+
+const history = ref<Scenario[]>([]);
+const redoHistory = ref<Scenario[]>([]);
+const maxHistorySize = 50;
+
+
+function saveHistorySnapshot() {
+  const snapshot = JSON.parse(JSON.stringify(scenario.value));
+  history.value.push(snapshot);
+  redoHistory.value = [];
+
+  if (history.value.length > maxHistorySize) {
+    history.value.shift();
+  }
+}
+
+function redoLastAction() {
+  if (redoHistory.value.length === 0) {
+    notifications.notify("Нет действий для повтора");
+    return;
+  }
+
+  const nextState = redoHistory.value.pop();
+  if (nextState) {
+    history.value.push(JSON.parse(JSON.stringify(scenario.value)));
+    scenario.value = nextState;
+    currentRoot.value = scenario.value.data[0];
+    layoutTree();
+    
+    notifications.notify("Действие возвращено");
+  }
+}
+
+
+function undoLastAction() {
+  if (history.value.length === 0) {
+    notifications.notify("Нет действий для отмены");
+    return;
+  }
+
+  const lastState = history.value.pop();
+  if (lastState) {
+    redoHistory.value.push(JSON.parse(JSON.stringify(scenario.value))); 
+    scenario.value = lastState;
+    currentRoot.value = scenario.value.data[0];
+    layoutTree();
+    
+    notifications.notify("Последнее действие отменено");
+  }
+}
+
+
 
 function saveScript() {
   state.games
@@ -792,6 +860,8 @@ interface Line {
   tooltipWidth: number
   tooltipText: string
 }
+
+
 
 const lines = computed(() => {
   const arr: Line[] = [];
@@ -870,6 +940,7 @@ const svgHeight = computed(() => {
 })
 
 function addChild(parentNode: GraphNode) {
+  saveHistorySnapshot();
   const newId = Date.now(); // Генерируем числовой ID
 
   const parentX = parentNode.meta?.x || 0;
@@ -902,6 +973,7 @@ function addChild(parentNode: GraphNode) {
 }
 
 function deleteNode(nodeToDelete: GraphNode) {
+  saveHistorySnapshot();
   // 1. Удаляем сам узел из данных
   scenario.value.data = scenario.value.data.filter(
     node => node.id !== nodeToDelete.id
@@ -944,6 +1016,7 @@ function connectNode(targetNode: GraphNode) {
     connectingFrom.value = targetNode;
   } else {
     
+    saveHistorySnapshot();
     const sourceNode = connectingFrom.value;
     
     const isSameNode = sourceNode.id === targetNode.id;
@@ -975,6 +1048,7 @@ function editEdge(node: GraphNode, edgeIndex: number) {
 
 function saveEdgeText() {
   if (editingEdge.value) {
+    saveHistorySnapshot();
     editingEdge.value.node.to[editingEdge.value.index].line = edgeText.value;
     closeEdgeModal();
   }
@@ -1010,7 +1084,6 @@ defineExpose({
 });
 
 </script>
-
 
 <style scoped>
 
@@ -1077,7 +1150,7 @@ defineExpose({
   position: absolute;
   top: 0;
   left: 0;
-  will-change: transform; /* Оптимизация анимации */
+  will-change: transform; 
 }
 
 .lines {
@@ -1376,6 +1449,40 @@ defineExpose({
   fill: #6b21a8;
 }
 
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: background 0.2s;
+  border-radius: 6px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.icon-btn svg {
+  stroke: #4b5563; 
+  width: 24px;
+  height: 24px;
+}
+.icon-btn:hover svg {
+  stroke: #a78bfa; 
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
+  justify-content: center;
+  margin-bottom: 10px; 
+}
 .header-buttons {
   display: flex;
   justify-content:center;
