@@ -1,18 +1,8 @@
 <template>
-  <div class="modal-bg" @click.self="close">
-    <div class="modal-window">
-      <!-- Кнопки удалить и закрыть -->
-      <div class="modal-actions">
-        <button class="icon-btn" @click="close">
-          <svg width="28" height="28" fill="none">
-            <path d="M7 7l14 14M21 7L7 21" stroke="#a352fa" stroke-width="2" />
-          </svg>
-        </button>
-      </div>
-      <h1 class="modal-title">Игра</h1>
-      <form @submit.prevent="submit" class="modal-form">
+  <ModalWindow :header="'Игра'" @validate-request="submit" @closeModal="close" :showButtons="true">
+      <div class="modal-form">
         <div class="modal-grid">
-          <!-- Левая колонка -->
+          
           <div>
             <div class="field-group">
               <label class="field-label">Название</label>
@@ -23,7 +13,7 @@
               <textarea v-model="game.description" required class="input textarea" />
             </div>
           </div>
-          <!-- Правая колонка -->
+          
           <div>
             <div class="field-group">
               <label class="field-label">Жанр</label>
@@ -63,17 +53,16 @@
             </div>
           </div>
         </div>
-        <div class="modal-buttons">
-          <button type="submit" class="save-btn">Сохранить</button>
-        </div>
-      </form>
-    </div>
-  </div>
+      </div>
+    </ModalWindow>
 </template>
 
 <script>
+import ModalWindow from '../ModalWindow.vue';
+
 export default {
   name: 'CreateGameModal',
+  components: {ModalWindow},
   props: {
     showDelete: { type: Boolean, default: false },
     gameData: { type: Object, default: null },
@@ -158,39 +147,7 @@ export default {
 </script>
 
 <style scoped>
-/* Затемнение фона */
-.modal-bg {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(100, 60, 90, 0.48);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-/* Окно */
-.modal-window {
-  background: #fff;
-  border-radius: 18px;
-  min-width: 700px;
-  max-width: 900px;
-  min-height: 480px;
-  box-shadow: 0 12px 48px #ab72e780;
-  padding: 36px 38px 24px 38px;
-  position: relative;
-  overflow: visible;
-}
 
-.modal-actions {
-  position: absolute;
-  top: 22px;
-  right: 28px;
-  display: flex;
-  gap: 16px;
-}
 .icon-btn {
   background: none;
   border: none;
@@ -217,7 +174,7 @@ export default {
 
 .modal-grid {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: auto auto;
   gap: 5%;
 }
 
