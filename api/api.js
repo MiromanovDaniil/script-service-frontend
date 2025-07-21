@@ -109,7 +109,7 @@ export const fetchProtectedData = async () => {
       } catch (refreshError) {
         // Очищаем токен при неудачном обновлении
         sessionStorage.removeItem('token')
-        sessionStorage.removeItem('user_id')
+        sessionStorage.removeItem('user')
         return {
           error: true,
           data: 'Session expired. Please login again.',
@@ -125,7 +125,7 @@ export const logout = async () => {
   try {
     //await api.post('/logout')
     sessionStorage.removeItem('token')
-    sessionStorage.removeItem('user_id')
+    sessionStorage.removeItem('user')
     return { success: true }
   } catch (error) {
     return handleError(error)

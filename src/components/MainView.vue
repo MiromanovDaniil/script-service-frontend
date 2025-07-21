@@ -26,10 +26,7 @@
           <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#601f7e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-</div>
-
-
-    
+</div>    
 
     <div class="zoom-controls">
       <button @click="zoomIn">+</button>
@@ -212,6 +209,7 @@ import notifications from '@/notifications'
 import { mount } from '@vue/test-utils'
 import { useRoute, useRouter } from 'vue-router'
 import RegenerateModal from '@/components/RegenerateModal.vue';
+import { submitData } from '../../api/api'
 
 const hoveredLineIndex = ref<number | null>(null);
 let isLoading = ref(false);
@@ -551,8 +549,18 @@ function handleNodeSubmit({ main, additional }: { main: string; additional: stri
 function handleNodeRegenerate() {
   if (editingNode.value) {
     saveHistorySnapshot();
-    // РЕГЕНЕРАЦИЯ
-    editingNode.value.line = `[Регенерировано] ${editingNode.value.line}`;
+    let regenerateData = {
+      data: scenario.data,
+      regenerate_node_id: editingNode.id
+    } 
+    submitData(regenerateData, 'regenerate', true).then((response) =>
+      {
+        if(response.error){
+          throw response.error.data;
+        }
+        scenario.data = response;      
+      }
+    )
   }
 }
 

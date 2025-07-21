@@ -7,7 +7,7 @@
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
         </svg>
-        <span class="user-name">{{ state.user.firstName || 'username' }}</span>
+        <span class="user-name">{{ this.username }}</span>
       </div>
 
       <div class="dashboard-status">
@@ -118,7 +118,7 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { logout } from '../../../api/api'
+import { fetchData, logout } from '../../../api/api'
 </script>
 
 <script>
@@ -146,7 +146,7 @@ export default {
       isCharEditModalOpened: false,
       editChar: "",
       showUserMenu: false,
-
+      username: ''
     }
   },
   computed: {
@@ -174,6 +174,8 @@ export default {
     this.selectedVoiceName = localStorage.getItem('voiceName') || ''
     this.updateVoices()
     window.speechSynthesis.addEventListener('voiceschanged', this.updateVoices)
+    let user = JSON.parse(sessionStorage.getItem('user'));
+    this.username = user.name + " " + user.surname;
   },
   beforeUnmount() {
     window.speechSynthesis.removeEventListener('voiceschanged', this.updateVoices)

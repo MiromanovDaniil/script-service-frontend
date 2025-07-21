@@ -16,7 +16,7 @@ export default {
   },
   methods: {
     checkAuth(to) {
-      const isAuth = sessionStorage.getItem("user_id");
+      const isAuth = sessionStorage.getItem("user");
       
       if ((to.path === "/login" || to.path === "/register") && isAuth) {
         this.$router.push("/");

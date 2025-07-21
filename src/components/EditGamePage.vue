@@ -248,7 +248,8 @@ export default {
       scriptToEdit: null,
       scriptEditScene: null,
       sceneToEdit: null,
-      regenerate: false
+      regenerate: false,
+      username: ''
     }
   },
   mounted() {

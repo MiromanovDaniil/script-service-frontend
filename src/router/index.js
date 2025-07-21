@@ -21,7 +21,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuth = sessionStorage.getItem('user_id')
+  const isAuth = sessionStorage.getItem('user')
 
   if (!isAuth && to.path !== '/login' && to.path !== '/register') {
   }

@@ -5,7 +5,7 @@
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
   </svg>
-  <span class="user-name">{{ state.user.firstName || 'username' }}</span>
+  <span class="user-name">{{ this.username }}</span>
 </div>
 
     <button @click="exit" class="btn">Назад</button>
@@ -96,5 +96,14 @@ export default {
       this.$emit('editScript', script, scene)
     },
   },
+  mounted(){
+    let user = JSON.parse(sessionStorage.getItem('user'));
+    this.username = user.name + " " + user.surname;
+  },
+  data(){
+    return {
+      username: ""
+    }
+  }
 }
 </script>
