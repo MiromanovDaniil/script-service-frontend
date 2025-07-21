@@ -28,7 +28,7 @@
           </svg>
         </router-link>
 
-        <button class="logout-button" @click="logout().then(res=>{if(res.success){let r = useRouter(); r.push('/login')}})" :title="$t('common.logout')">
+        <button class="logout-button" @click="logoutL" :title="$t('common.logout')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9c48e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
@@ -128,7 +128,7 @@ import { state, saveState } from '@/store'
 import CharactersModal from '../CharacterViewModal.vue'
 import ModalWindow from '../ModalWindow.vue'
 import CreateCharacterModal from '../CreateCharacterModal.vue'
-
+let r = useRouter();
 export default {
   components: { GameItem, CreateGameModal, CharactersModal, ModalWindow, CreateCharacterModal },
   data() {
@@ -270,8 +270,14 @@ export default {
 
     toggleUserMenu() {
   this.showUserMenu = !this.showUserMenu;
-}
-
+},
+async logoutL() {
+      const res = await logout(); // Ваша функция logout из api.js
+      if (res.success) {
+        this.$router.push('/login'); // Используем this.$router
+      }
+      return res;
+    }
   },
 }
 </script>
@@ -317,10 +323,6 @@ export default {
   box-shadow: 0 2px 12px #a78ed03c;
   transition: background 0.2s;
 }
-.user-avatar-icon:hover {
-  background: #e0d0ff;
-}
-
 
 .user-name {
   font-size: 22px;
@@ -528,8 +530,6 @@ export default {
   background: #f3ddff;
 }
 
-
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -547,7 +547,4 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
-
-
 </style>

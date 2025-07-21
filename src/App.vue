@@ -1,41 +1,63 @@
 <script>
 import Notifications from '@/components/Notifications.vue'
-import { toRaw } from 'vue';
 import { load, state, saveState } from './store';
-import { useRoute } from 'vue-router';
 
 export default {
   components: { Notifications },
-  mounted() {
-    let route = useRoute();
-    console.log(route.path)
-    if(route.path === "/login" || route.path === "/register"){
-      if(sessionStorage.getItem("user_id")){
-        this.$router.push('/')
+  data() {
+    return {
+      isLoading: true
+    }
+  },
+  watch: {
+    '$route'(to) {
+      this.checkAuth(to);
+    }
+  },
+  methods: {
+    checkAuth(to) {
+      const isAuth = sessionStorage.getItem("user_id");
+      
+      if ((to.path === "/login" || to.path === "/register") && isAuth) {
+        this.$router.push("/");
+      } 
+      else if (to.path !== "/login" && to.path !== "/register" && !isAuth) {
+        this.$router.push("/login");
       }
     }
-    else{
-      if(!sessionStorage.getItem("user_id")){
-        this.$router.push('/login')
-      }
-    }
-    load().then(val=>{
-      Object.assign(state, val.data)
-      if (route.name === 'main') {
-        state.selectedGameId = null
-        state.selectedSceneId = null
-        state.selectedSceneId = null
+  },
+  async beforeMount() {
+    this.checkAuth(this.$route)
+    try {
+      const val = await load();
+      Object.keys(val.data).forEach(key => {
+        state[key] = val.data[key];
+      });
+
+      if (this.$route.name === 'main') {
+        state.selectedGameId = null;
+        state.selectedSceneId = null;
         saveState();
       }
-    });
+      
+    } catch (error) {
+      console.error("Ошибка загрузки данных:", error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 }
 </script>
 
 <template>
   <div id="app">
-    <router-view />
+    <router-view v-if="!isLoading" />
     <Notifications />
+    <div v-if="isLoading" class="loading-spinner">
+    <svg width="50" height="50" viewBox="0 0 50 50" class="spin">
+      <circle cx="25" cy="25" r="20" fill="none" stroke="#7c37a5" stroke-width="4" stroke-dasharray="80 20" />
+    </svg>
+  </div>
   </div>
 </template>
 
@@ -132,4 +154,25 @@ body {
   transform: scale(1.18) rotate(7deg);
 }
 
+.loading-spinner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color:#f3e8ff;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

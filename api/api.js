@@ -35,6 +35,10 @@ const handleResponse = (response) => {
 
 // Функция для обработки ошибок
 const handleError = (error) => {
+  if(error.status == 401){
+    logout()
+    return
+  }
   return {
     error: true,
     data: error.response?.data || error.message,
@@ -119,7 +123,7 @@ export const fetchProtectedData = async () => {
 // Функция для выхода из системы
 export const logout = async () => {
   try {
-    await api.post('/logout')
+    //await api.post('/logout')
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('user_id')
     return { success: true }

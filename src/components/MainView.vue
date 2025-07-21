@@ -11,11 +11,11 @@
       </div>
       <button 
         class="regenerate-btn btn"
-        @click="reloadGraph"
+        @click="()=>{reloadGraph();notifications.notify('Graph refreshed')}"
         title="Обновить диалог"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#6B46C1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 4V8H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H8M20 20V16H19.4185M19.4185 16C18.2317 18.9318 15.3574 21 12 21C7.92038 21 4.55399 17.9463 4.06189 14M19.4185 16H16" stroke="#601f7e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
@@ -1380,7 +1380,7 @@ defineExpose({
   display: flex;
   justify-content:center;
   grid-gap: 10vw;
-
+  margin-bottom: 2vh;
 }
 
 @media (max-width: 600px) {
