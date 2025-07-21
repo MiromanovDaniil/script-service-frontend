@@ -5,21 +5,18 @@
     <div class="scenario-description" placeholder="Краткое описание диалога">{{ scenario.description }}</div>
 
    <div class="button-group">
-  <button class="btn icon-btn" @click="undoLastAction" title="Отменить">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-    </svg>
-  </button>
+  <button class="btn" @click="undoLastAction" title="Отменить" v-if="!isLoading">
+        <svg fill="#601f7e" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="none">
+  <path d="M9,16 C9.85216986,16 10.2974338,15.0144864 9.78322518,14.3774732 L9.70710678,14.2928932 L7.41602684,12.0006549 C8.6852851,10.797551 10.6983085,10 13,10 C16.918278,10 20,12.3112915 20,15 C20,15.5522847 20.4477153,16 21,16 C21.5522847,16 22,15.5522847 22,15 C22,11.0612915 17.918278,8 13,8 C10.1933072,8 7.65904665,8.99693838 6.00030879,10.5849581 L3.70710678,8.29289322 C3.1045317,7.69031813 2.09281919,8.07233231 2.00598327,8.88636906 L2,9 L2,15 C2,15.5128358 2.38604019,15.9355072 2.88337887,15.9932723 L3,16 L9,16 Z"/>
+</svg>
+      </button>
 
-  <button class="btn icon-btn" @click="redoLastAction" title="Вперёд">
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-  </svg>
+  <button class="btn" @click="redoLastAction" title="Вперёд" v-if="!isLoading">
+  <svg fill="#601f7e" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="none" transform="matrix(-1,0,0,1,0,0)">
+  <path d="M9,16 C9.85216986,16 10.2974338,15.0144864 9.78322518,14.3774732 L9.70710678,14.2928932 L7.41602684,12.0006549 C8.6852851,10.797551 10.6983085,10 13,10 C16.918278,10 20,12.3112915 20,15 C20,15.5522847 20.4477153,16 21,16 C21.5522847,16 22,15.5522847 22,15 C22,11.0612915 17.918278,8 13,8 C10.1933072,8 7.65904665,8.99693838 6.00030879,10.5849581 L3.70710678,8.29289322 C3.1045317,7.69031813 2.09281919,8.07233231 2.00598327,8.88636906 L2,9 L2,15 C2,15.5128358 2.38604019,15.9355072 2.88337887,15.9932723 L3,16 L9,16 Z"></path>
+</svg>
 </button>
-
-
-  <button class="btn" @click="saveScript">Сохранить</button>
-
+  <button class="btn" @click="saveScript" v-if="!isLoading">Сохранить</button>
   <button 
         class="regenerate-btn btn"
         @click="()=>{reloadGraph();notifications.notify('Graph refreshed')}"
@@ -1479,21 +1476,16 @@ defineExpose({
 .button-group {
   display: flex;
   align-items: center;
-  gap: 10px; 
+  gap: 10vw;
   justify-content: center;
-  margin-bottom: 10px; 
-}
-.header-buttons {
-  display: flex;
-  justify-content:center;
-  grid-gap: 10vw;
-  margin-bottom: 2vh;
+  margin-bottom: 3vh; 
 }
 
-@media (max-width: 600px) {
-  .header-buttons {
+@media (max-width: 750px) {
+  .button-group {
     flex-direction: column;
+    align-items: start;
+    gap: 1vh
   }
 }
-
 </style>
