@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Создаем экземпляр axios с базовыми настройками
 const api = axios.create({
-  baseURL: 'http://10.82.249.105:8005/api/',
+  baseURL: 'http://26.15.136.181:8005/api/',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -52,7 +52,7 @@ export const submitData = async (data, endpoint, requiresAuth = false) => {
     const client = requiresAuth
       ? api
       : axios.create({
-          baseURL: 'http://10.82.249.105:8005/api/',
+          baseURL: 'http://26.15.136.181:8005/api/',
           headers: { 'Content-Type': 'application/json' },
         })
 
@@ -73,7 +73,7 @@ export const fetchData = async (endpoint, requiresAuth = false, params = {}) => 
     const client = requiresAuth
       ? api
       : axios.create({
-          baseURL: 'http://10.82.56.167:8005/api/',
+          baseURL: 'http://26.15.136.181:8005/api/',
           headers: { 'Content-Type': 'application/json' },
         })
 

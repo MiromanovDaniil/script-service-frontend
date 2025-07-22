@@ -37,7 +37,6 @@
           </svg>
         </button>
       </div>
-
       
     </div>
   </ModalWindow>

@@ -175,12 +175,13 @@
     </div>
 
      <RegenerateModal
+      ref="regenerate"
       :showModal="showEditModal"
       :initialMainPrompt="editingNode?.line || ''"
       :initialAdditionalPrompt="editingNode?.info || ''"
       @close="closeEditModal"
       @submit="handleNodeSubmit"
-      @regenerate="handleNodeRegenerate"
+      @regenerate="handleNodeRegenerate(this)"
     />
 
    <dialog 
@@ -546,13 +547,17 @@ function handleNodeSubmit({ main, additional }: { main: string; additional: stri
   closeEditModal();
 }
 
-function handleNodeRegenerate() {
+function handleNodeRegenerate(vm) {
   if (editingNode.value) {
     saveHistorySnapshot();
     let regenerateData = {
       data: scenario.data,
-      regenerate_node_id: editingNode.id
+      regenerate_node_id: editingNode.id,
+      prompt: vm.$refs.regenerate.additionalPrompt
     } 
+    scenario.value.data = [];
+    saveScript()
+    reloadGraph()
     submitData(regenerateData, 'regenerate', true).then((response) =>
       {
         if(response.error){
@@ -963,8 +968,6 @@ function addChild(parentNode: GraphNode) {
       y: position.y
     }
   }
-
-
 
   scenario.value.data.push(newNode);
   parentNode.to.push({

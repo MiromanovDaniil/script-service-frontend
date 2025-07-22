@@ -78,6 +78,7 @@ body {
   flex-direction: row;
   width: 100%;
   height: 97.5vh;
+  user-select: none;
 }
 .btn {
     background: linear-gradient(90deg, #c08cff 20%, #cde0ff 100%);
